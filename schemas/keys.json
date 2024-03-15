@@ -1,0 +1,14 @@
+[
+    {
+        "keyId": "abc123",
+        "keySecret": "abcdef1234567890"
+    },
+    {
+        "keyId": "def456",
+        "keySecret": "1234567890abcdef"
+    },
+    {
+        "keyId": "ghi789",
+        "keySecret": "12345abcdef67890"
+    }
+]

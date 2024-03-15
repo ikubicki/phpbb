@@ -1,0 +1,20 @@
+{
+    "name": "irek/phpbb",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "phpbb\\": "src/phpbb",
+            "apps\\": "src/apps"
+        }
+    },
+    "authors": [
+        {
+            "name": "Irek Kubicki",
+            "email": "irek@ixdude.com"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.10",
+        "ramsey/uuid": "^4.7"
+    }
+}

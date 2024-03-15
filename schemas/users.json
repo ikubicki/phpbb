@@ -1,0 +1,22 @@
+[
+    {
+        "id": "abc123",
+        "name": "John Doe",
+        "metadata": {}
+    },
+    {
+        "id": "def456",
+        "name": "Jane Doe",
+        "metadata": {}
+    },
+    {
+        "id": "ghi789",
+        "name": "John Smith",
+        "metadata": {}
+    },
+    {
+        "id": "jkl012",
+        "name": "Jane Smith",
+        "metadata": {}
+    }
+]

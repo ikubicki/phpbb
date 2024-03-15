@@ -1,0 +1,64 @@
+[
+    {
+        "id": "abc123",
+        "name": "My forum",
+        "description": "This is my forum",
+        "time": 1234567890,
+        "owner": "abc123",
+        "members": [
+            "abc123",
+            "def456"
+        ],
+        "type": "forum",
+        "tags": [
+            "tag1",
+            "tag2"
+        ],
+        "metadata": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    },
+    {
+        "id": "def456",
+        "name": "My other forum",
+        "description": "This is my other forum",
+        "time": 1234567890,
+        "owner": "abc123",
+        "members": [
+            "abc123",
+            "def456"
+        ],
+        "parentForumId": "abc123",
+        "type": "forum",
+        "tags": [
+            "tag1",
+            "tag2"
+        ],
+        "metadata": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    },
+    {
+        "id": "ghi789",
+        "name": "My sub forum",
+        "description": "This is my sub forum",
+        "time": 1234567890,
+        "owner": "abc123",
+        "members": [
+            "abc123",
+            "def456"
+        ],
+        "parentForumId": "abc123",
+        "type": "forum",
+        "tags": [
+            "tag1",
+            "tag2"
+        ],
+        "metadata": {
+            "key1": "value1",
+            "key2": "value2"
+        }
+    }
+]

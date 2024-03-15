@@ -1,0 +1,16 @@
+[
+    {
+        "userId": "abc123",
+        "role": "admin"
+    },
+    {
+        "userId":"abc123",
+        "role": "moderator",
+        "forumId": "abc123"
+    },
+    {
+        "userId":"abc123",
+        "role": "editor",
+        "forumId": "def456"
+    }
+]

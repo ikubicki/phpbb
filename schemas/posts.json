@@ -1,0 +1,56 @@
+[
+    {
+        "authorId": "abc123",
+        "topicId": "abc123",
+        "forumId": "abc123",
+        "title": "First Post",
+        "content": "This is the first post",
+        "time": 1234567890,
+        "id": "abc123",
+        "metadata": {
+            "authorName": "John Doe",
+            "topicName": "First Topic",
+            "forumName": "My Forum"
+        },
+        "tags": [
+            "tag1",
+            "tag2"
+        ]
+    },
+    {
+        "authorId": "abc123",
+        "topicId": "abc123",
+        "forumId": "abc123",
+        "title": "Second Post",
+        "content": "This is the second post",
+        "time": 1234567890,
+        "id": "abc123",
+        "metadata": {
+            "authorName": "John Doe",
+            "topicName": "First Topic",
+            "forumName": "My Forum"
+        },
+        "tags": [
+            "tag1",
+            "tag2"
+        ]
+    },
+    {
+        "authorId": "abc123",
+        "topicId": "abc123",
+        "forumId": "abc123",
+        "title": "Third Post",
+        "content": "This is the third post",
+        "time": 1234567890,
+        "id": "abc123",
+        "metadata": {
+            "authorName": "John Doe",
+            "topicName": "First Topic",
+            "forumName": "My Forum"
+        },
+        "tags": [
+            "tag1",
+            "tag2"
+        ]
+    }
+]
