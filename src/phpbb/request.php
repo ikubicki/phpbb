@@ -90,6 +90,11 @@ class request
         return $_SERVER['HTTP_' . str_replace(['-', '.'], '_', strtoupper($name))] ?? false;
     }
 
+    public function bearer()
+    {
+        return substr($this->header('Authorization'), 7);
+    }
+
     public function context(string $property, $alternative = null)
     {
         return $this->context->get($property, $alternative);

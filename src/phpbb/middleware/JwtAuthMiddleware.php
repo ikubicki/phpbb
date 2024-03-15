@@ -9,7 +9,7 @@ class JwtAuthMiddleware
 {
     public function execute($request, $response)
     {
-        $authorization = $request->header('Authorization');
+        $authorization = $request->bearer();
         $payload = jwtAuth::getPayload($authorization);
         if (!$payload || !$payload->sub) {
             throw new NotAuthorized($request);

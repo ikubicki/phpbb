@@ -15,7 +15,7 @@ class api extends app
                 new JwtAuthMiddleware(),
             ]
         ]);
-        $this->post('/authenticate', require('modules/authenticate.php'));
+        $this->post('/authorize', require('modules/authorize.php'));
         //$this->post('/login/:param', [$this, 'loginParam']);
         //$this->post('/login/:parama/:paramb', [$this, 'loginParam']);
     }
