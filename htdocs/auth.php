@@ -5,10 +5,12 @@ ini_set('error_reporting', E_ALL);
 
 require(__DIR__ . '/../vendor/autoload.php');
 
-$app = new apps\auth\api(
-    new phpbb\config('config/auth.json')
-);
-$app->addPlugin('db', 'ORM INSTANCE SHOULD BE HERE');
+phpbb\config::root(__DIR__ . '/..');
+
+$config = new phpbb\config('config/auth.json');
+$db = new phpbb\db($config);
+$app = new apps\auth\api($config);
+$app->addPlugin('db', $db);
 
 phpbb\serializer::serialize(
     $app->handle(new phpbb\request())

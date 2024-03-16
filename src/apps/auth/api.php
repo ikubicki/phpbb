@@ -8,14 +8,19 @@ use phpbb\middleware\JwtAuthMiddleware;
 class api extends app
 {
 
-    protected function setup($config)
+    public function setup($config)
     {
+        $this->plugin('db')
+            ->registerSchema(schemas\users::class)
+            ->registerSchema(schemas\organisations::class);
+
         $this->get('/me', require('modules/me.php'), [
             'preExecution' => [
                 new JwtAuthMiddleware(),
             ]
         ]);
         $this->post('/authorize', require('modules/authorize.php'));
+        
         //$this->post('/login/:param', [$this, 'loginParam']);
         //$this->post('/login/:parama/:paramb', [$this, 'loginParam']);
     }

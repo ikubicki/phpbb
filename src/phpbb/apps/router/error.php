@@ -16,6 +16,7 @@ class error implements route
             $code = $throwable->getCode() ?: $response::SERVER_ERROR;
             return $response->status($code)->send([
                 'error' => $throwable->getMessage(),
+                'trace' => $throwable->getTraceAsString(),
             ]);
         };
     }

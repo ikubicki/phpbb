@@ -11,9 +11,12 @@ abstract class abstraction
         return $this->data === false;
     }
 
-    public function raw(string $property)
+    public function raw(string $property, $alternative = null)
     {
-        return $this->data[$property] ?? false;
+        if (!property_exists($this->data, $property)) {
+            return $alternative;
+        }
+        return $this->data->$property;
     }
 
     public function get(string $property, $alternative = null)

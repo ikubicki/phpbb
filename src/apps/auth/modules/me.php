@@ -3,14 +3,25 @@
 use phpbb\app;
 use phpbb\request;
 use phpbb\response;
+use phpbb\errors\ServerError;
 
 return function (request $request, response $response, ?app $app)
 {
-
+    $auth = $request->context('auth');
+    $subject = $auth->sub ?? '';
+    if (!$subject) {
+        throw new ServerError('Invalid authorization token');
+    }
+    $user = $this
+        ->plugin('db')
+        ->collection('users')
+        ->findOne(['uuid' => $subject]);
+    if (!$user) {
+        throw new ServerError('User doesn\'t exists anymore.');
+    }
     $response->send([
-        'call' => 'me',
-        'params' => $request->params,
-        'body' => $request->body(),
-        'auth' => $request->context('auth'),
+        'expires' => $auth->exp ?? 0,
+        'remaining' => ($auth->exp ?? 0) - time(),
+        'user' => $user->export(),
     ]);
 };

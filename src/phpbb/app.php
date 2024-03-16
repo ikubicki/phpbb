@@ -19,7 +19,6 @@ abstract class app
     {
         $this->config = $config;
         $this->router = new router($config);
-        $this->setup($config);
     }
 
     function get(string $path, callable|array $handler, array $options = []) 
@@ -52,6 +51,7 @@ abstract class app
 
     public function handle(request $request): response
     {
+        $this->setup($this->config);
         return $this->router->find($request)->execute($this);
     }
 
@@ -95,5 +95,5 @@ abstract class app
         );
     }
 
-    abstract protected function setup($config);
+    abstract public function setup(config $config);
 }

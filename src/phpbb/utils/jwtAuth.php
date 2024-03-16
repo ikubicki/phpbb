@@ -49,6 +49,9 @@ class jwtAuth
         try {
             $key = self::extractKey($token);
             $payload = JWT::decode($token, $key);
+            if (($payload->exp ?? 0) < time()) {
+                $payload = null;
+            }
         }
         catch(Throwable $throwable) {
             $payload = null;
