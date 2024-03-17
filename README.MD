@@ -16,7 +16,7 @@ Frontend will be using a React based single page application to render the conte
 
 There will be no admin application.
 
-Building extensions will not require any server changes as universal use metadata fields will be available for core entities.
+Building extensions will not require any server changes, as universal usage metadata fields will be available for core entities.
 
 The end goal is to build a compact, easy to maintain solution that will be able to replace obsolete phpBB installations.
 
@@ -24,7 +24,7 @@ The end goal is to build a compact, easy to maintain solution that will be able 
 
 Identity service will be responsible for authentication, organisations (groups, roles, etc.), permissions and users management.
 
-Authentication will allow to build custom methods, except default login and password authentication, such as Facebook, Google, UUM, OAuth2 or U2F methods.
+Authentication will allow to build custom methods, next to a default login and password authentication, such as Facebook, Google, UUM, OAuth2 or U2F methods.
 
 Authorization within Identity and phpBB service will be based on JWT tokens. Both services will require to call a /verify endpoint in Identity service to retrieve permissions for given bearer token.
 
