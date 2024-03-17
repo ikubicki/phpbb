@@ -7,6 +7,9 @@ use DateTimeInterface;
 use phpbb\db\errors\FieldError;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * Field definition
+ */
 class field
 {
     const TYPE_STRING = 'string';
@@ -29,12 +32,42 @@ class field
     const ON_UPDATE = 3;
     const ON_DELETE = 4;
 
+    /**
+     * @var string $name
+     */
     private string $name;
+
+    /**
+     * @var string $type
+     */
     private string $type;
+
+    /**
+     * @var mixed $default
+     */
     private mixed $default; 
+
+    /**
+     * @var bool $writable
+     */
     private bool $writable = true;
+
+    /**
+     * @var ?int $behaviour
+     */
     private ?int $behaviour = null;
 
+    /**
+     * The constructor
+     * Calls ON_CREATE behaviour hooks
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @param mixed $default
+     * @param string type
+     * @param bool $writable
+     * @param int $behaviour
+     */
     public function __construct(
         string $name, 
         mixed $default, 
@@ -53,17 +86,37 @@ class field
         }
     }
 
-    public function __toString()
+    /**
+     * String serialized
+     * 
+     * @author ikubicki
+     * @return string
+     */
+    public function __toString(): string
     {
         return $this->name;
     }
 
-    public function default()
+    /**
+     * Returns default value
+     * 
+     * @author ikubicki
+     * @return mixed
+     */
+    public function default(): mixed
     {
         return $this->default;
     }
 
-    public function process($value = false)
+    /**
+     * Field value processor
+     * Casts value to field type
+     * 
+     * @author ikubicki
+     * @param mixed $value
+     * @return mixed
+     */
+    public function process(mixed $value = false): mixed
     {
         if ($value === false) {
             return $this->default;
@@ -91,11 +144,12 @@ class field
         }
     }
 
-    public function getBehaviour(): int
-    {
-        return $this->behaviour;
-    }
-
+    /**
+     * Calculates value for field
+     * 
+     * @author ikubicki
+     * @return mixed
+     */
     public function calculateValue(): mixed
     {
         switch($this->type) {

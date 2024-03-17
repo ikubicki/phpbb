@@ -5,11 +5,23 @@ namespace phpbb\serializer;
 use phpbb\response;
 use XMLWriter;
 
+/**
+ * XML serializer
+ */
 class xml extends abstraction
 {
 
+    /**
+     * @var response $response
+     */
     protected response $response;
 
+    /**
+     * XML serializer
+     * 
+     * @author ikubicki
+     * @return string
+     */
     public function __toString(): string
     {
         $xml = $this->createDocument();
@@ -17,7 +29,13 @@ class xml extends abstraction
         return $xml->outputMemory(true);
     }
 
-    private function createDocument()
+    /**
+     * Creates an XML document
+     * 
+     * @author ikubicki
+     * @return XMLWriter
+     */
+    private function createDocument(): XMLWriter
     {
         $xml = new XMLWriter();
         $xml->openMemory();
@@ -26,7 +44,17 @@ class xml extends abstraction
         return $xml;
     }
 
-    private function load(XMLWriter $xml, $key, $data): XMLWriter {
+    /**
+     * Loads data into XML document
+     * 
+     * @author ikubicki
+     * @param XMLWriter $xml
+     * @param string $key
+     * @param mixed $data
+     * @return XMLWriter
+     */
+    private function load(XMLWriter $xml, string $key, mixed $data): XMLWriter
+    {
         if (is_object($data)) {
             $data = (array) $data;
         }

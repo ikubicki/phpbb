@@ -20,15 +20,15 @@ class query
 
     private db $db;
     public string $collection;
-    public array $query;
+    public array $filters;
     public array $fields;
     public array $options;
 
-    public function __construct(db $db, string $collection, array $query, $options = [], array $fields = [])
+    public function __construct(db $db, string $collection, array $filters, $options = [], array $fields = [])
     {
         $this->db = $db;
         $this->collection = $collection;
-        $this->query = $query;
+        $this->filters = $filters;
         $this->fields = $fields;
         $this->options = $options;
     }

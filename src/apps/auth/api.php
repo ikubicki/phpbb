@@ -8,11 +8,15 @@ use phpbb\middleware\JwtAuthMiddleware;
 class api extends app
 {
 
-    public function setup($config)
+    private function setupSchemas()
     {
         $this->plugin('db')
             ->registerSchema(schemas\users::class)
             ->registerSchema(schemas\organisations::class);
+    }
+
+    private function setupRoutes()
+    {
 
         $this->get('/me', require('modules/me.php'), [
             'preExecution' => [
@@ -20,21 +24,12 @@ class api extends app
             ]
         ]);
         $this->post('/authorize', require('modules/authorize.php'));
-        $this->get('/users', [modules\users::class, 'getUsers']);
-        $this->post('/users', [modules\users::class, 'createUser']);
-        $this->get('/users/:userId', [modules\users::class, 'getUser']);
-        $this->patch('/users/:userId', [modules\users::class, 'patchUser']);
-        $this->delete('/users/:userId', [modules\users::class, 'deleteUser']);
-
-        //$this->post('/login/:param', [$this, 'loginParam']);
-        //$this->post('/login/:parama/:paramb', [$this, 'loginParam']);
+        (new modules\users())->setup($this);
     }
 
-    public function loginParam($request, $response)
+    protected function setup($config): void
     {
-        $response->send([
-            'call' => 'loginParam',
-            'params' => $request->params,
-        ]);
+        $this->setupSchemas();
+        $this->setupRoutes();
     }
 }

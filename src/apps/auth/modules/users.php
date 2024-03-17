@@ -13,7 +13,16 @@ use phpbb\errors\ResourceNotFound;
 class users
 {
 
-    public static function getUsers(request $request, response $response, app $app)
+    public function setup(app $app)
+    {
+        $app->get('/users', [$this, 'getUsers']);
+        $app->post('/users', [$this, 'createUser']);
+        $app->get('/users/:userId', [$this, 'getUser']);
+        $app->patch('/users/:userId', [$this, 'patchUser']);
+        $app->delete('/users/:userId', [$this, 'deleteUser']);
+    }
+
+    public function getUsers(request $request, response $response, app $app)
     {
         $query = [];
         if ($request->get('uuid')) {
@@ -26,7 +35,7 @@ class users
         return $response->status($response::OK)->send($users);
     }
 
-    public static function createUser(request $request, response $response, app $app)
+    public function createUser(request $request, response $response, app $app)
     {
         try {
             $user = $app->plugin('db')->collection('users')->create();
@@ -42,7 +51,7 @@ class users
         return $response->status($response::OK)->send($user->export());
     }
 
-    public static function getUser(request $request, response $response, app $app)
+    public function getUser(request $request, response $response, app $app)
     {
         if (empty($request->params['userId'])) {
             throw new ResourceNotFound($request);
@@ -56,7 +65,7 @@ class users
         return $response->status($response::OK)->send($user);
     }
 
-    public static function patchUser(request $request, response $response, app $app)
+    public function patchUser(request $request, response $response, app $app)
     {
         if (empty($request->params['userId'])) {
             throw new ResourceNotFound($request);
@@ -72,7 +81,7 @@ class users
         return $response->status($response::OK)->send($user);
     }
 
-    public static function deleteUser(request $request, response $response, app $app)
+    public function deleteUser(request $request, response $response, app $app)
     {
         if (empty($request->params['userId'])) {
             throw new ResourceNotFound($request);

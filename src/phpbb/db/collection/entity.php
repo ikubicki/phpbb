@@ -5,6 +5,9 @@ namespace phpbb\db\collection;
 use JsonSerializable;
 use phpbb\db\collection;
 
+/**
+ * Entity class
+ */
 class entity implements JsonSerializable
 {
 
@@ -13,37 +16,116 @@ class entity implements JsonSerializable
     const MODIFIED = 1;
     const CURRENT = 2;
 
+    /**
+     * @var collection $collection
+     */
     private collection $collection;
+    
+    /**
+     * @var array $data
+     */
     private array $data = [];
+
+    /**
+     * @var array $fields
+     */
     protected array $fields = [];
+
+    /**
+     * @var array $references
+     */
     protected array $references = [];
+
+    /**
+     * @var array $indexes
+     */
     protected array $indexes = [];
+
+    /**
+     * @var array $hooks
+     */
     protected array $hooks = [];
+
+    /**
+     * @var int $__status
+     */
     private int $__status = self::NEW;
 
+    /**
+     * Sets collection instance
+     * 
+     * @author ikubicki
+     * @param collection $collection
+     * @return void
+     */
     public function collection(collection $collection): void
     {
         $this->collection = $collection;
     }
 
-    public function import($data): entity
+    /**
+     * Imports entity data
+     * 
+     * @author ikubicki
+     * @param array $data
+     * @return entity
+     */
+    public function import(array $data): entity
     {
         $this->data = array_merge($this->data, $data);
         $this->__status = self::CURRENT;
         return $this;
     }
 
-    public function __set($field, $value)
+    /**
+     * Magic setter allows to set entity values
+     * Marks entity as modified
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param mixed $value
+     */
+    public function __set(string $field, mixed $value)
     {
-        $this->data[$field] = isset($this->fields[$field]) ? $this->fields[$field]->process($value) : $value;
-        $this->status(self::MODIFIED);
+        // schema defined entity
+        if (count($this->fields) && isset($this->fields[$field])) {
+            $this->data[$field] = $this->fields[$field]->process($value);
+            $this->status(self::MODIFIED);
+        }
+        // freeform entity
+        else if (!count($this->fields)) {
+            $this->data[$field] = $value;
+            $this->status(self::MODIFIED);
+        }
     }
 
-    public function __get($field)
+    /**
+     * Magic getter allows to get entity values
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @return mixed
+     */
+    public function __get($field): mixed
     {
-        return $this->data[$field] ?? (isset($this->fields[$field]) ? $this->fields[$field]->default() : null);
+        // return stored value
+        if (isset($this->data[$field])) {
+            return $this->data[$field];
+        }
+        // return defined field default value
+        if (isset($this->fields[$field])) {
+            return $this->fields[$field]->default();
+        }
+        return null;
     }
 
+    /**
+     * Allows to set multiple fields for given values collection
+     * 
+     * @author ikubicki
+     * @param array $fields
+     * @return entity
+     */
     public function setMany(array $fields): entity
     {
         foreach($fields as $field => $value) {
@@ -52,6 +134,12 @@ class entity implements JsonSerializable
         return $this;
     }
 
+    /**
+     * Exports entity values
+     * 
+     * @author ikubicki
+     * @return array
+     */
     public function export(): array
     {
         $data = (array) $this->data;
@@ -59,11 +147,28 @@ class entity implements JsonSerializable
         return $data;
     }
 
+    /**
+     * JSON serialization method
+     * 
+     * @author ikubicki
+     * @return array
+     */
     public function jsonSerialize(): array
     {
         return $this->export();
     }
 
+    /**
+     * Adds field definiton
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @param mixed $default
+     * @param string $type
+     * @param bool $writable
+     * @param int $behaviour
+     * @return entity
+     */
     protected function field(
         string $name, 
         mixed $default = null, 
@@ -80,33 +185,90 @@ class entity implements JsonSerializable
         return $this;
     }
 
-    protected function reference(string $field, string $entity): entity
+    /**
+     * Adds reference definition
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param string $collection
+     * @param string $referencedField
+     * @return entity
+     */
+    protected function reference(string $field, string $collection, string $referencedField): entity
     {
-        $this->references[$field] = $entity;
+        $this->references[$field] = new reference(
+            $this->collection->db, $collection, $referencedField
+        );
         return $this;
     }
 
+    /**
+     * Returns referenced entity by field name
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @return ?entity
+     */
+    public function getReference(string $field): ?entity
+    {
+        if (isset($this->references[$field])) {
+            return null;
+        }
+        return $this->references[$field]->getEntity($this);
+    }
+
+    /**
+     * Adds index definition
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param string $type
+     * @return entity
+     */
     protected function index(string $field, string $type = field::INDEX_FIELD): entity
     {
         $this->indexes[$field] = $type;
         return $this;
     }
 
+    /**
+     * Sets entity status
+     * Returns calculated status
+     * 
+     * @author ikubicki
+     * @param int $status
+     * @return int
+     */
     private function status(int $status): int
     {
         return $this->__status = $this->__status < $status ? $this->__status : $status;
     }
 
+    /**
+     * Deletes an entity from database collection
+     * Marks entity as deleted
+     * 
+     * @author ikubicki
+     * @return entity
+     */
     public function delete(): entity
     {
         if ($this->__status > self::DELETED) {
             $this->callHooks(field::ON_DELETE);
-            $this->collection->remove($this->getQuery());
+            $this->collection->remove($this->getFilters());
             $this->status(self::DELETED);
         }
         return $this;
     }
 
+    /**
+     * Saves entity to database collection
+     * Calls registered field behaviour hooks
+     * Marks entity as current
+     * 
+     * @author ikubicki
+     * @return entity
+     */
     public function save(): entity
     {
         if ($this->__status === self::NEW) {
@@ -116,25 +278,45 @@ class entity implements JsonSerializable
         }
         else if ($this->__status < self::CURRENT) {
             $this->callHooks(field::ON_UPDATE);
-            $this->collection->update($this->getQuery(), $this->getValues());
+            $this->collection->update($this->getFilters(), $this->getValues());
             $this->status(self::CURRENT);
         }
         return $this;
     }
 
-    private function callHooks(int $hook)
+    /**
+     * Calls field behaviour hooks
+     * 
+     * @author ikubicki
+     * @param int $behaviour
+     * @return void
+     */
+    private function callHooks(int $behaviour): void
     {
-        foreach(($this->hooks[$hook] ?? []) as $field => $definition) {
+        foreach(($this->hooks[$behaviour] ?? []) as $field => $definition) {
             $this->data[$field] = $definition->calculateValue();
         }
     }
 
+    /**
+     * Returns primary type indexes
+     * 
+     * @author ikubicki
+     * @return array
+     */
     protected function pks(): array
     {
         return array_keys($this->indexes, field::INDEX_PRIMARY);
     }
 
-    protected function getQuery(): array
+    /**
+     * Returns query filters
+     * Returns values of primary indexes
+     * 
+     * @author ikubicki
+     * @return array
+     */
+    protected function getFilters(): array
     {
         $indexes = $this->pks();
         return array_filter(
@@ -146,6 +328,13 @@ class entity implements JsonSerializable
         );
     }
 
+    /**
+     * Returns query values
+     * Returns values of non primary index fields
+     * 
+     * @author ikubicki
+     * @return array
+     */
     protected function getValues(): array
     {
         $indexes = $this->pks();

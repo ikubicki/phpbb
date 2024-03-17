@@ -3,20 +3,44 @@
 namespace phpbb\db;
 
 use phpbb\db;
+use phpbb\db\query;
 use phpbb\db\collection\entity;
 use phpbb\db\connectors\records;
 
+/**
+ * Database collection class
+ */
 class collection
 {
-    private db $db;
+    /**
+     * @var db $db
+     */
+    public db $db;
+
+    /**
+     * @var string $collection
+     */
     private string $collection;
 
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param db $db
+     * @param string $collection
+     */
     public function __construct(db $db, string $collection)
     {
         $this->db = $db;
         $this->collection = $collection;
     }
 
+    /**
+     * Creates a new entity
+     * 
+     * @author ikubicki
+     * @return entity
+     */
     public function create(): entity
     {
         $entity = null;
@@ -31,18 +55,36 @@ class collection
         return $entity;
     }
 
-    public function find(?array $query, ?array $options = [], ?array $fields = []): records
+    /**
+     * Queries for multiple collection entities
+     * 
+     * @author ikubicki
+     * @param ?array $filters
+     * @param array $options
+     * @param array $fields
+     * @return records
+     */
+    public function find(?array $filters = [], array $options = [], array $fields = []): records
     {
         return $this
-            ->query($query, $options, $fields)
+            ->query($filters, $options, $fields)
             ->find()
             ->hydrate($this->getHydrator());
     }
 
-    public function findOne(?array $query, ?array $options = [], ?array $fields = []): ?entity
+    /**
+     * Queries for a single collection entity
+     * 
+     * @author ikubicki
+     * @param ?array $filters
+     * @param array $options
+     * @param array $fields
+     * @return ?entity
+     */
+    public function findOne(?array $filters, ?array $options = [], ?array $fields = []): ?entity
     {
         $record = $this
-            ->query($query, $options, $fields)
+            ->query($filters, $options, $fields)
             ->findOne();
         if ($record) {
             return $record->hydrate($this->getHydrator());
@@ -50,38 +92,80 @@ class collection
         return $record;
     }
 
-    public function query(?array $query, ?array $options = [], ?array $fields = []): db\query
-    {
-        return new db\query($this->db, $this->collection, $query ?: [], $options ?: [], $fields ?: []);
-    }
-
-    public function add(?array $values, ?array $options = []): bool
+    /**
+     * Adds values as new document to database
+     * 
+     * @author ikubicki
+     * @param array $values
+     * @param array $options
+     * @return bool
+     */
+    public function add(array $values, array $options = []): bool
     {
         return $this
             ->query([], $options)
             ->add($values);
     }
 
-    public function update(?array $query, ?array $values, ?array $options = []): bool
+    /**
+     * Updates documents in the database
+     * 
+     * @author ikubicki
+     * @param array $filters
+     * @param array $values
+     * @param array $options
+     * @return bool
+     */
+    public function update(array $filters, array $values, array $options = []): bool
     {
         return $this
-            ->query($query, $options)
+            ->query($filters, $options)
             ->update($values);
     }
 
-    public function remove(?array $query, ?array $options = []): bool
+    /**
+     * Removes documents from the database
+     * 
+     * @author ikubicki
+     * @param array $filters
+     * @param array $options
+     * @return bool
+     */
+    public function remove(array $filters, array $options = []): bool
     {
         return $this
-            ->query($query, $options)
+            ->query($filters, $options)
             ->remove();
     }
 
-    private function getHydrator()
+    /**
+     * Returns a query object that allows to execute commands on database
+     * 
+     * @author ikubicki
+     * @param ?array $filters
+     * @param array $options
+     * @param array $fields
+     * @return query
+     */
+    public function query(?array $filters, array $options = [], array $fields = []): query
+    {
+        return new query($this->db, $this->collection, $filters ?: [], $options ?: [], $fields ?: []);
+    }
+
+    /**
+     * Returns a hydration callable
+     * 
+     * @author ikubicki
+     * @return callable
+     */
+    private function getHydrator(): callable
     {
         $class = $this->db->schemas[$this->collection] ?? false;
         $collection = $this;
+        // records iterator
         return function($records) use ($class, $collection) {
 
+            // actual hydrating function
             $hydrator = function($record) use ($class, $collection) {
                 if ($class) {
                     $entity = new $class();

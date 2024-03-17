@@ -5,14 +5,14 @@ use phpbb\request;
 use phpbb\response;
 use phpbb\errors\ServerError;
 
-return function (request $request, response $response, ?app $app)
+return function (request $request, response $response, app $app)
 {
     $auth = $request->context('auth');
     $subject = $auth->sub ?? '';
     if (!$subject) {
         throw new ServerError('Invalid authorization token');
     }
-    $user = $this
+    $user = $app
         ->plugin('db')
         ->collection('users')
         ->findOne(['uuid' => $subject]);

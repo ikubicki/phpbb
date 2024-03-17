@@ -18,7 +18,7 @@ class organisations extends entity
             ->field('created', null, field::TYPE_UNIXTIME, false, field::ON_CREATE)
             ->field('modified', null, field::TYPE_UNIXTIME, false, field::ON_UPDATE)
             ->index('uuid', field::INDEX_PRIMARY)
-            ->reference('creator', users::class);
+            ->reference('creator', users::class, 'uuid');
     }
 
     public function metadata($field, $value)

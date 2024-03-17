@@ -5,16 +5,32 @@ namespace phpbb\utils;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Ramsey\Uuid\Uuid;
-use stdclass;
+use stdClass;
 use Throwable;
 
+/**
+ * JWT helper
+ */
 class jwtAuth
 {
+    /**
+     * Generates UUID v4 string
+     * 
+     * @author ikubicki
+     * @return string
+     */
     private static function generateKey(): string
     {
         return (string) Uuid::uuid4();
     }
 
+    /**
+     * Retrieves a Key instance for a given token
+     * 
+     * @author ikubicki
+     * @param ?string $token
+     * @return ?Key
+     */
     public static function extractKey(?string $token): ?Key
     {
         if (!$token) {
@@ -29,6 +45,12 @@ class jwtAuth
         return null;
     }
 
+    /**
+     * Returns a collection of generated key ID and key
+     * 
+     * @author ikubicki
+     * @return array
+     */
     public static function getKidAndKey(): array
     {
         $kid = str_replace('-', '', self::generateKey());
@@ -38,13 +60,27 @@ class jwtAuth
         return [$kid, $key];
     }
 
+    /**
+     * Generates JWT token for provided payload
+     * 
+     * @author ikubicki
+     * @param array $payload
+     * @return string
+     */
     public static function getJwt(array $payload): string
     {
         list($kid, $key) = self::getKidAndKey();
         return JWT::encode($payload, $key, 'HS512', $kid);
     }
 
-    public static function getPayload(string $token): ?stdclass
+    /**
+     * Returns a payload from a given token
+     * 
+     * @author ikubciki
+     * @param ?string $roken
+     * @return ?stdClass
+     */
+    public static function getPayload(?string $token): ?stdClass
     {
         try {
             $key = self::extractKey($token);
@@ -59,7 +95,14 @@ class jwtAuth
         return $payload;
     }
 
-    public static function getKey($kid): ?Key
+    /**
+     * Returns a Key instance for given key ID
+     * 
+     * @author ikubicki
+     * @param string $kid
+     * @return ?Key
+     */
+    public static function getKey(string $kid): ?Key
     {
         $filename = '/tmp/key-' . $kid;
         if (file_exists($filename)) {

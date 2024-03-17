@@ -2,18 +2,47 @@
 
 namespace phpbb\request;
 
-use function Ramsey\Uuid\v1;
-
+/**
+ * HTTP information class
+ */
 class http
 {
 
+    /**
+     * @var string $host
+     */
     public string $host;
+
+    /**
+     * @var ?int $port
+     */
     public ?int $port;
+
+    /**
+     * @var string $path
+     */
     public string $path;
+
+    /**
+     * @var bool $ssl
+     */
     public bool $ssl;
+
+    /**
+     * @var ?string $referer
+     */
     public ?string $referer;
+
+    /**
+     * @var string $query
+     */
     public string $query;
 
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     */
     public function __construct()
     {
         $this->host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';

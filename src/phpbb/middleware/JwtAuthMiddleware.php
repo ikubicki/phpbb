@@ -2,14 +2,24 @@
 
 namespace phpbb\middleware;
 
+use phpbb\request;
 use phpbb\errors\NotAuthorized;
 use phpbb\utils\jwtAuth;
 
 class JwtAuthMiddleware
 {
-    public function execute($request, $response)
+    /**
+     * Executes JWT validation
+     * Throws NotAuthorized when JWT validation fails
+     * 
+     * @author ikubicki
+     * @param request
+     * 
+     * @throws NotAuthorized
+     */
+    public function execute(request $request)
     {
-        $authorization = $request->bearer();
+        $authorization = $request->client->bearer();
         $payload = jwtAuth::getPayload($authorization);
         if (!$payload || !$payload->sub) {
             throw new NotAuthorized($request);

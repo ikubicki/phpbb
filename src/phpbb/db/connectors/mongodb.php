@@ -2,7 +2,6 @@
 
 namespace phpbb\db\connectors;
 
-use DateTime;
 use DateTimeInterface;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Session;
@@ -12,6 +11,7 @@ use MongoDB\BSON\UTCDateTime;
 use phpbb\db\errors\DatabaseError;
 use phpbb\db\errors\DuplicateError;
 use phpbb\db\query;
+use stdClass;
 
 /**
  * MongoDB connector
@@ -253,7 +253,7 @@ class mongodb extends abstraction
         return new Command([
             'update' => $query->collection,
             'updates' => [[
-                'q' => $this->convertValues($query->query),
+                'q' => $this->convertValues($query->filters),
                 'u' => [
                     '$set' => $this->convertValues($values),
                 ],
@@ -275,7 +275,7 @@ class mongodb extends abstraction
         return new Command([
             'delete' => $query->collection,
             'deletes' => [[
-                'q' => $this->convertValues($query->query),
+                'q' => $this->convertValues($query->filters),
                 'limit' => $query->options[$query::LIMIT] ?? 1,
             ]]
         ]);
@@ -293,7 +293,7 @@ class mongodb extends abstraction
         return new Command((object) array_merge(
             [
                 'find' => $query->collection,
-                'filter' => $this->convertValues($query->query ?: []),
+                'filter' => $this->convertValues($query->filters ?: []),
             ],
             $this->projection($query->fields),
             $this->sort($query->options),
@@ -301,14 +301,14 @@ class mongodb extends abstraction
         ));
     }
 
-    private function convertValues($values)
+    private function convertValues($values): stdClass
     {
         foreach($values as $key => $value) {
-            if ($value instanceof DateTime) {
+            if ($value instanceof DateTimeInterface) {
                 $values[$key] = new UTCDateTime($value->getTimestamp() * 1000);
             }
         }
-        return $values;
+        return (object) $values;
     }
 
     /**
