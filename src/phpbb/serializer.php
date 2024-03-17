@@ -27,12 +27,14 @@ class serializer
     public function output() 
     {
         ob_start($this->getBufferHandler());
-        http_response_code($this->response->status ?: 200);
-        if ($this->response->type) {
-            header('Content-Type: ' . $this->response->type);
-        }
-        foreach($this->response->headers as $header => $value) {
-            header("$header: $value");
+        if (!headers_sent()) {
+            http_response_code($this->response->status ?: 200);
+            if ($this->response->type) {
+                header('Content-Type: ' . $this->response->type);
+            }
+            foreach($this->response->headers as $header => $value) {
+                header("$header: $value");
+            }
         }
         echo $this->serializer->__toString();
         ob_flush();

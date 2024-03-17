@@ -26,8 +26,8 @@ class request
         $this->client = new request\client();
         $this->http = new request\http();
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        $this->contentType = $_SERVER['Content-Type'] ?? null;
-        $this->contentLength = $_SERVER['Content-Length'] ?? null;
+        $this->contentType = $_SERVER['CONTENT_TYPE'] ?? 'application/json';
+        $this->contentLength = $_SERVER['CONTENT_LENGTH'] ?? null;
         $this->context = new context();
     }
 

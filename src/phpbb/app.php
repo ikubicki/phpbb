@@ -42,6 +42,13 @@ abstract class app
         );
     }
 
+    function patch(string $path, callable|array $handler, array $options = [])
+    {
+        $this->router->register(
+            $this->router->route($this->router::PATCH, $path, $handler, $options)
+        );
+    }
+
     function delete(string $path, callable|array $handler, array $options = [])
     {
         $this->router->register(

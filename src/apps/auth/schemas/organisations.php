@@ -15,7 +15,7 @@ class organisations extends entity
             ->field('name')
             ->field('description')
             ->field('creator', null, field::TYPE_UUID)
-            ->index('uuid', field::INDEX_UNIQUE)
+            ->index('uuid', field::INDEX_PRIMARY)
             ->reference('creator', users::class);
     }
 

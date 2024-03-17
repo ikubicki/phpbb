@@ -20,7 +20,12 @@ class api extends app
             ]
         ]);
         $this->post('/authorize', require('modules/authorize.php'));
-        
+        $this->get('/users', [modules\users::class, 'getUsers']);
+        $this->post('/users', [modules\users::class, 'createUser']);
+        $this->get('/users/:userId', [modules\users::class, 'getUser']);
+        $this->patch('/users/:userId', [modules\users::class, 'patchUser']);
+        $this->delete('/users/:userId', [modules\users::class, 'deleteUser']);
+
         //$this->post('/login/:param', [$this, 'loginParam']);
         //$this->post('/login/:parama/:paramb', [$this, 'loginParam']);
     }

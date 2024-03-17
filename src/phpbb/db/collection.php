@@ -4,6 +4,7 @@ namespace phpbb\db;
 
 use phpbb\db;
 use phpbb\db\collection\entity;
+use phpbb\db\connectors\records;
 
 class collection
 {
@@ -30,19 +31,23 @@ class collection
         return $entity;
     }
 
-    public function find(?array $query, ?array $options = [], ?array $fields = [])
+    public function find(?array $query, ?array $options = [], ?array $fields = []): records
     {
         return $this
             ->query($query, $options, $fields)
+            ->find()
             ->hydrate($this->getHydrator());
     }
 
-    public function findOne(?array $query, ?array $options = [], ?array $fields = [])
+    public function findOne(?array $query, ?array $options = [], ?array $fields = []): ?entity
     {
-        $options[query::LIMIT] = 1;
-        return $this
+        $record = $this
             ->query($query, $options, $fields)
-            ->hydrate($this->getHydrator());
+            ->findOne();
+        if ($record) {
+            return $record->hydrate($this->getHydrator());
+        }
+        return $record;
     }
 
     public function query(?array $query, ?array $options = [], ?array $fields = []): db\query
@@ -50,15 +55,38 @@ class collection
         return new db\query($this->db, $this->collection, $query ?: [], $options ?: [], $fields ?: []);
     }
 
+    public function add(?array $values, ?array $options = []): bool
+    {
+        return $this
+            ->query([], $options)
+            ->add($values);
+    }
+
+    public function update(?array $query, ?array $values, ?array $options = []): bool
+    {
+        return $this
+            ->query($query, $options)
+            ->update($values);
+    }
+
+    public function remove(?array $query, ?array $options = []): bool
+    {
+        return $this
+            ->query($query, $options)
+            ->remove();
+    }
+
     private function getHydrator()
     {
         $class = $this->db->schemas[$this->collection] ?? false;
-        return function($records) use ($class) {
+        $collection = $this;
+        return function($records) use ($class, $collection) {
 
-            $hydrator = function($record) use ($class) {
+            $hydrator = function($record) use ($class, $collection) {
                 if ($class) {
                     $entity = new $class();
                     $entity->import((array) $record);
+                    $entity->collection($collection);
                     return $entity;
                 }
                 return $record;

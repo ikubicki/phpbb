@@ -10,6 +10,9 @@ class json extends abstraction
 
     public function __toString(): string
     {
-        return json_encode($this->response->body, JSON_PRETTY_PRINT);
+        if ($this->response->body !== null) {
+            return json_encode($this->response->body, JSON_PRETTY_PRINT);
+        }
+        return '';
     }
 }

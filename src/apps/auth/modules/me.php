@@ -22,6 +22,6 @@ return function (request $request, response $response, ?app $app)
     $response->send([
         'expires' => $auth->exp ?? 0,
         'remaining' => ($auth->exp ?? 0) - time(),
-        'user' => $user->export(),
+        'user' => $user,
     ]);
 };
