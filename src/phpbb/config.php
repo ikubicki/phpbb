@@ -2,16 +2,46 @@
 
 namespace phpbb;
 
+use stdClass;
+
+/**
+ * Configuration loader class
+ */
 class config extends config\abstraction
 {
-    public static $root;
-    protected $data;
-    public function __construct($file) {
+    /**
+     * @var string $root
+     */
+    public static string $root;
+
+    /**
+     * @var ?stdClass $data
+     */
+    protected ?stdClass $data;
+
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param string $file
+     */
+    public function __construct(string $file)
+    {
         $this->data = config\loader::load($file);
     }
 
-    public static function root($path)
+    /**
+     * Sets or returns (if parameter is omitted) root path
+     * 
+     * @author ikubicki
+     * @param ?string $path
+     * @return ?string
+     */
+    public static function root(?string $path = null): ?string
     {
-        self::$root = rtrim($path, '/') . '/';
+        if ($path) {
+            self::$root = rtrim($path, '/') . '/';
+        }
+        return self::$root;
     }
 }

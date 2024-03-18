@@ -7,8 +7,9 @@ use phpbb\errors\ServerError;
 
 return function (request $request, response $response, app $app)
 {
+    print 'me';
     $auth = $request->context('auth');
-    $subject = $auth->sub ?? '';
+    $subject = $auth->raw('sub');
     if (!$subject) {
         throw new ServerError('Invalid authorization token');
     }
@@ -20,8 +21,8 @@ return function (request $request, response $response, app $app)
         throw new ServerError('User doesn\'t exists anymore.');
     }
     $response->send([
-        'expires' => $auth->exp ?? 0,
-        'remaining' => ($auth->exp ?? 0) - time(),
+        'expires' => $auth->raw('exp', 0),
+        'remaining' => $auth->raw('exp', 0) - time(),
         'user' => $user,
     ]);
 };

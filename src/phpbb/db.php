@@ -2,48 +2,119 @@
 
 namespace phpbb;
 
-use phpbb\errors\ServerError;
+use phpbb\db\errors\DatabaseError;
 
+/**
+ * Database handler class
+ */
 class db
 {
-    private config $config;
-    private string $connection;
-    public array $schemas;
 
-    public function __construct(config $config, ?string $connection = 'default')
+    /**
+     * @var config\abstraction $config
+     */
+    private config\abstraction $config;
+
+    /**
+     * @var string $connection
+     */
+    private string $connection;
+
+    /**
+     * @var array $schemas
+     */
+    private static array $schemas = [];
+
+    /**
+     * @var array $cache
+     */
+    private static array $cache = [];
+
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param config\abstraction $config
+     * @param string $connection
+     */
+    public function __construct(config\abstraction $config, string $connection = 'default')
     {
         $this->config = $config;
         $this->connection = $connection;
+        if (!isset(self::$schemas[$this->connection])) {
+            self::$schemas[$this->connection] = [];
+        }
     }
 
-    public function use($connection) {
+    /**
+     * Switches connection
+     * Returns a new instance
+     * 
+     * @author ikubicki
+     * @param string $connection
+     * @return db
+     */
+    public function use(string $connection): db
+    {
         return new db($this->config, $connection);
     }
 
+    /**
+     * Returns a database collection handler
+     * 
+     * @author ikubicki
+     * @param string $collection
+     * @return db\collection
+     */
     public function collection(string $collection): db\collection
     {
         return new db\collection($this, $collection);
     }
 
-    public function registerSchema(string $schema): db
+    /**
+     * Registers new collection schema
+     * 
+     * @author ikubicki
+     * @param string $class
+     * @return db
+     */
+    public function registerSchema(string $class): db
     {
-        $name = substr($schema, strrpos($schema, '\\') + 1);
-        $this->schemas[$name] = $schema;
+        $collection = substr($class, strrpos($class, '\\') + 1);
+        self::$schemas[$this->connection][$collection] = $class;
         return $this;
     }
 
-    private static $cache = [];
+    /**
+     * Returns registered collection schema
+     * 
+     * @author ikubicki
+     * @param string $collection
+     * @return ?string
+     */
+    public function getSchema(string $collection): ?string
+    {
+        return self::$schemas[$this->connection][$collection] ?? null;
+    }
 
-    public function connector()
+    /**
+     * Returns an instance of database connector
+     * Throws DatabaseError if connection is misconfigured
+     * 
+     * @author ikubicki
+     * @return db\connectors\abstraction
+     * @throws DatabaseError
+     */
+    public function connector(): db\connectors\abstraction
     {
         if (!isset(self::$cache[$this->connection])) {
             $config = $this->config->get('database')->get($this->connection);
             if (!$config) {
-                throw new ServerError(sprintf(ServerError::NO_DATABASE_CONNECTION, $this->connection));
+                throw new DatabaseError(sprintf(DatabaseError::NO_DATABASE_CONNECTION, $this->connection));
             }
             $class = sprintf('phpbb\\db\\connectors\\%s', $config->get('type'));
             if (!class_exists($class)) {
-                throw new ServerError(sprintf(ServerError::DATABASE_NOT_SUPPORTED, $config->get('type')));
+                throw new DatabaseError(sprintf(DatabaseError::DATABASE_NOT_SUPPORTED, $config->get('type')));
             }
             self::$cache[$this->connection] = new $class($config);
         }

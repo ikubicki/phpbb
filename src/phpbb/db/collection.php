@@ -18,21 +18,21 @@ class collection
     public db $db;
 
     /**
-     * @var string $collection
+     * @var string $name
      */
-    private string $collection;
+    private string $name;
 
     /**
      * The constructor
      * 
      * @author ikubicki
      * @param db $db
-     * @param string $collection
+     * @param string $name
      */
-    public function __construct(db $db, string $collection)
+    public function __construct(db $db, string $name)
     {
         $this->db = $db;
-        $this->collection = $collection;
+        $this->name = $name;
     }
 
     /**
@@ -44,9 +44,9 @@ class collection
     public function create(): entity
     {
         $entity = null;
-        if ($this->db->schemas[$this->collection] ?? false) {
-            $class = $this->db->schemas[$this->collection];
-            $entity = new $class;
+        $schema = $this->db->getSchema($this->name);
+        if ($schema) {
+            $entity = new $schema;
         }
         if (!$entity) {
             $entity = new entity;
@@ -149,7 +149,7 @@ class collection
      */
     public function query(?array $filters, array $options = [], array $fields = []): query
     {
-        return new query($this->db, $this->collection, $filters ?: [], $options ?: [], $fields ?: []);
+        return new query($this->db, $this->name, $filters ?: [], $options ?: [], $fields ?: []);
     }
 
     /**
@@ -160,7 +160,7 @@ class collection
      */
     private function getHydrator(): callable
     {
-        $class = $this->db->schemas[$this->collection] ?? false;
+        $class = $this->db->getSchema($this->name);
         $collection = $this;
         // records iterator
         return function($records) use ($class, $collection) {

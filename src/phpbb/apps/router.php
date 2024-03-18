@@ -43,7 +43,7 @@ class router
         foreach((self::$table[$request->method] ?? []) as $route) {
             $params = $route->test($request->http->path);
             if ($params !== false) {
-                $request->params = $params;
+                $request->uri->import($params);
                 $response = new response($request, $route, $response);
             }
         }

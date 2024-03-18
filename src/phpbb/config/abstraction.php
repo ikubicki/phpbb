@@ -2,16 +2,39 @@
 
 namespace phpbb\config;
 
+use stdClass;
+
+/**
+ * Abstracted configuration class
+ */
 abstract class abstraction
 {
 
-    protected $data;
+    /**
+     * @var ?stdClass $data
+     */
+    protected ?stdClass $data;
     
-    public function isMissing(): bool {
+    /**
+     * Checks if data is missing
+     * 
+     * @author ikubicki
+     * @return bool
+     */
+    public function isMissing(): bool
+    {
         return $this->data === false;
     }
 
-    public function raw(string $property, $alternative = null)
+    /**
+     * Returns raw config value
+     * 
+     * @author ikubicki
+     * @param string $property
+     * @param mixed $alternative
+     * @return mixed
+     */
+    public function raw(string $property, mixed $alternative = null): mixed
     {
         if (!property_exists($this->data, $property)) {
             return $alternative;
@@ -19,7 +42,17 @@ abstract class abstraction
         return $this->data->$property;
     }
 
-    public function get(string $property, $alternative = null)
+    /**
+     * Returns wrapped config value
+     * If value is not set or value is an object,
+     * an empty config entity will be returned.
+     * 
+     * @author ikubicki
+     * @param string $property
+     * @param mixed $alternative
+     * @return mixed
+     */
+    public function get(string $property, mixed $alternative = null): mixed
     {
         if ($alternative === null) {
             $alternative = new item();
@@ -33,7 +66,15 @@ abstract class abstraction
         return $this->data->$property;
     }
 
-    public function set(string $property, $value)
+    /**
+     * Sets config value
+     * 
+     * @author ikubicki
+     * @param string $property
+     * @param mixed $value
+     * @return abstraction
+     */
+    public function set(string $property, mixed $value): abstraction
     {
         $this->data[$property] = $value;
         return $this;

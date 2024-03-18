@@ -4,6 +4,7 @@ namespace phpbb\db\collection;
 
 use DateTime;
 use DateTimeInterface;
+use phpbb\db\collection\field\enum;
 use phpbb\db\errors\FieldError;
 use Ramsey\Uuid\Uuid;
 
@@ -38,9 +39,9 @@ class field
     private string $name;
 
     /**
-     * @var string $type
+     * @var string|enum $type
      */
-    private string $type;
+    private string|enum $type;
 
     /**
      * @var mixed $default
@@ -64,14 +65,14 @@ class field
      * @author ikubicki
      * @param string $name
      * @param mixed $default
-     * @param string type
+     * @param string|object type
      * @param bool $writable
      * @param int $behaviour
      */
     public function __construct(
         string $name, 
         mixed $default, 
-        string $type = self::TYPE_STRING, 
+        string|enum $type = self::TYPE_STRING, 
         bool $writable = true,
         int $behaviour = null
     )
@@ -84,6 +85,19 @@ class field
         if ($behaviour == self::ON_CREATE) {
             $this->default = $this->calculateValue();
         }
+    }
+
+    /**
+     * Returns new enum instance
+     * 
+     * @author ikubicki
+     * @param array $options
+     * @param ?string $default
+     * @return enum
+     */
+    public static function enum(array $options, ?string $default = null): enum
+    {
+        return new enum($options, $default);
     }
 
     /**
@@ -118,6 +132,9 @@ class field
      */
     public function process(mixed $value = false): mixed
     {
+        if ($this->type instanceof enum) {
+            return $this->type->process($value);
+        }
         if ($value === false) {
             return $this->default;
         }

@@ -3,21 +3,68 @@
 namespace phpbb;
 
 use phpbb\request\context;
+use phpbb\request\uri;
+use stdClass;
 
 class request
 {
 
+    /**
+     * @var ?string $accept
+     */
     public ?string $accept;
+
+    /**
+     * @var ?string $acceptEncoding
+     */
     public ?string $acceptEncoding;
+
+    /**
+     * @var ?string $acceptLanguage
+     */
     public ?string $acceptLanguage;
+
+    /**
+     * @var request\client $client
+     */
     public request\client $client;
+
+    /**
+     * @var request\http $http
+     */
     public request\http $http;
+
+    /**
+     * @var string $method
+     */
     public string $method;
+
+    /**
+     * @var ?string $contentType
+     */
     public ?string $contentType;
+
+    /**
+     * @var ?string $contentLength
+     */
     public ?string $contentLength;
-    public array $params = [];
+
+    /**
+     * @var uri $uri
+     */
+    public uri $uri;
+
+    /**
+     * @var context $context
+     */
     public context $context;
 
+    /**
+     * The constructor
+     * Wraps request data into object
+     * 
+     * @author ikubicki
+     */
     public function __construct()
     {
         $this->accept = $_SERVER['HTTP_ACCEPT'] ?? '';
@@ -28,25 +75,52 @@ class request
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $this->contentType = $_SERVER['CONTENT_TYPE'] ?? 'application/json';
         $this->contentLength = $_SERVER['CONTENT_LENGTH'] ?? null;
-        $this->context = new context();
+        $this->context = new context(new stdClass());
+        $this->uri = new uri();
     }
 
+    /**
+     * Checks if gzip is accepted by client
+     * 
+     * @author ikubicki
+     * @return bool
+     */
     public function useGzip(): bool
     {
         return strpos($this->acceptEncoding, 'gzip') !== false;
     }
 
+    /**
+     * Checks if posted data is a JSON data
+     * 
+     * @author ikubicki
+     * @return bool
+     */
     public function isJson(): bool
     {
         return stripos($this->contentType, 'application/json') !== false;
     }
 
+    /**
+     * Checks if posted data is a XML data
+     * 
+     * @author ikubicki
+     * @return bool
+     */
     public function isXml(): bool
     {
         return stripos($this->contentType, 'application/xml') !== false;
     }
 
-    public function body(bool $unserialize = true)
+    /**
+     * Returns posted body contents
+     * Unserializes by default
+     * 
+     * @author ikubicki
+     * @param bool $unserialize
+     * @return mixed
+     */
+    public function body(bool $unserialize = true): mixed
     {
         $contents = file_get_contents('php://input');
         if ($contents && $unserialize) {
@@ -60,37 +134,76 @@ class request
         return $contents;
     }
 
-    public function param(string $parameter): string|array|bool
+    /**
+     * Returns query parameter value
+     * 
+     * @author ikubicki
+     * @param string $parameter
+     * @return ?string
+     */
+    public function query(string $property): ?string
     {
-        return $this->params[$parameter] ?? false;
+        return $_GET[$property] ?? null;
     }
 
-    public function get(string $property): string|array|bool
+    /**
+     * Returns POST form parameter value
+     * 
+     * @author ikubicki
+     * @param string $parameter
+     * @param mixed $alternative
+     * @return mixed
+     */
+    public function post(string $property, mixed $alternative = null): mixed
     {
-        return $_GET[$property] ?? false;
+        return $_POST[$property] ?? $alternative;
     }
 
-    public function post(string $property): string|array|bool
+    /**
+     * Returns cookie value
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @return ?string
+     */
+    public function cookie(string $name): ?string
     {
-        return $_POST[$property] ?? false;
+        return $_COOKIE[$name] ?? null;
     }
 
-    public function cookie(string $property): string|bool
+    /**
+     * Returns posted file
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @return ?array
+     */
+    public function file(string $name): ?array
     {
-        return $_COOKIE[$property] ?? false;
+        return $_FILES[$name] ?? null;
     }
 
-    public function file(string $name): array|bool
+    /**
+     * Returns header value
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @return ?string
+     */
+    public function header(string $name): ?string
     {
-        return $_FILES[$name] ?? false;
+        return $_SERVER['HTTP_' . str_replace(['-', '.'], '_', strtoupper($name))] ?? null;
     }
 
-    public function header(string $name): string|bool
-    {
-        return $_SERVER['HTTP_' . str_replace(['-', '.'], '_', strtoupper($name))] ?? false;
-    }
-
-    public function context(string $property, $alternative = null)
+    /**
+     * Returns instance of request context
+     * 
+     * @author ikubicki
+     * @param string $property
+     * @param mixed $alternative
+     * @return mixed
+     */
+    public function context(string $property, mixed $alternative = null): mixed
     {
         return $this->context->get($property, $alternative);
     }

@@ -2,6 +2,8 @@
 
 namespace phpbb\apps\router;
 
+use stdClass;
+
 class defined implements route
 {
     public string $method;
@@ -20,7 +22,7 @@ class defined implements route
     public function test($path)
     {
         if ($this->path == $path) {
-            return [];
+            return null;
         }
         if (strpos($this->path, ':')) {
             $matches = [];
@@ -28,16 +30,16 @@ class defined implements route
             $pattern = preg_replace($expression, '(?<$2>[^/]+)', preg_quote($this->path), 9);
             @preg_match_all("#^$pattern$#i", $path, $matches);
             if (($matches[0][0] ?? false) == $path) {
-                $params = [];
+                $params = new stdClass();
                 foreach($matches as $param => $match) {
                     if (is_numeric($param)) {
                         continue;
                     }
                     if (count($match) == 1) {
-                        $params[$param] = reset($match);
+                        $params->$param = reset($match);
                     }
                     else if(count($match) > 1) {
-                        $params[$param] = $match;
+                        $params->$param = $match;
                     }
                 }
                 return $params;

@@ -16,15 +16,54 @@ class response
     const NOT_FOUND = 404;
     const SERVER_ERROR = 500;
 
+    /**
+     * @var request $request
+     */
     public request $request;
-    public route $route;
-    public ?response $previous;
-    public int $status = self::OK;
-    public array $headers = [];
-    public ?string $type;
-    public $body;
-    private $sent = false;
 
+    /**
+     * @var route $route
+     */
+    public route $route;
+
+    /**
+     * @var ?response $previous
+     */
+    public ?response $previous;
+
+    /**
+     * @var int $status
+     */
+    public int $status = self::OK;
+
+    /**
+     * @var array $headers
+     */
+    public array $headers = [];
+
+    /**
+     * @var ?string $type
+     */
+    public ?string $type;
+
+    /**
+     * @var mixed $body
+     */
+    public mixed $body;
+
+    /**
+     * @var bool $sent
+     */
+    private bool $sent = false;
+
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param route $route
+     * @param ?response $previous
+     */
     public function __construct(request $request, route $route, ?response $previous = null)
     {
         $this->request = $request;
@@ -37,6 +76,14 @@ class response
         $this->type($type);
     }
 
+    /**
+     * Executes application handler for route
+     * Executes error route handler on error
+     * 
+     * @author ikubicki
+     * @param app $app
+     * @return response
+     */
     public function execute(app $app): response
     {
         try {
@@ -57,40 +104,87 @@ class response
         return $this;
     }
 
+    /**
+     * Calls pre execution middleware
+     * 
+     * @author ikubicki
+     * @param app $app
+     * @return void
+     */
     private function preExecution(app $app): void
     {
-        $middleware = (array) ($this->route->options['preExecution'] ?? []);
-        $this->executeMiddleware($app, $middleware);
+        $middlewares = (array) ($this->route->options['preExecution'] ?? []);
+        $this->executeMiddleware($app, $middlewares);
     }
 
+    /**
+     * Calls post execution middlewares
+     * 
+     * @author ikubicki
+     * @param app $app
+     * @return void
+     */
     private function postExecution(app $app): void
     {
-        $middleware = (array) ($this->route->options['postExecution'] ?? []);
-        $this->executeMiddleware($app, $middleware);
+        $middlewares = (array) ($this->route->options['postExecution'] ?? []);
+        $this->executeMiddleware($app, $middlewares);
     }
 
-    private function executeMiddleware(app $app, array $middleware): void
+    /**
+     * Calls middleware
+     * 
+     * @author ikubicki
+     * @param app $app
+     * @param array $middlewares
+     * @return void
+     */
+    private function executeMiddleware(app $app, array $middlewares): void
     {
-        foreach($middleware as $callback) {
+        foreach($middlewares as $middleware) {
             if (!$this->sent) {
-                call_user_func_array([$callback, 'execute'], [$this->request, $this, $app]);
+                call_user_func_array([$middleware, 'execute'], [$this->request, $this, $app]);
             }
         }
     }
 
+    /**
+     * Sets response status
+     * 
+     * @author ikubicki
+     * @param int $status
+     * @return response
+     */
     public function status(int $status): response
     {
         $this->status = $status;
         return $this;
     }
 
-    public function header($name, $value): response
+    /**
+     * Sets response header
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @param string $value
+     * @return response
+     */
+    public function header(string $name, string $value): response
     {
         $this->headers[$name] = $value;
         return $this;
     }
 
-    public function send($body, ?string $type = null): response {
+    /**
+     * Sets response body and flags as sent
+     * Optionally sets the type
+     * 
+     * @author ikubicki
+     * @param mixed $body
+     * @param ?string $type
+     * @return response
+     */
+    public function send(mixed $body, ?string $type = null): response
+    {
         $this->sent = true;
         $this->body = $body;
         if ($type) {
@@ -99,12 +193,27 @@ class response
         return $this;
     }
 
-    public function type(?string $type): response {
+    /**
+     * Sets the type of response
+     * 
+     * @author ikubicki
+     * @param ?string $type
+     * @return response
+     */
+    public function type(?string $type): response
+    {
         $this->type = $type;
         return $this;
     }
 
-    private function extractType(request $request)
+    /**
+     * Extracts the type from request accept header
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @return ?string
+     */
+    private function extractType(request $request): ?string
     {
         if (!$request->accept) {
             return null;

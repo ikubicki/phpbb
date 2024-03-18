@@ -24,7 +24,8 @@ class api extends app
             ]
         ]);
         $this->post('/authorize', require('modules/authorize.php'));
-        (new modules\users())->setup($this);
+        (new modules\users($this))->setup();
+        (new modules\organisations($this))->setup();
     }
 
     protected function setup($config): void

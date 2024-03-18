@@ -11,9 +11,9 @@ class reference
 {
 
     /**
-     * @var db $db
+     * @var string $field
      */
-    private db $db;
+    private string $field;
 
     /**
      * @var string $collection
@@ -23,22 +23,22 @@ class reference
     /**
      * @var string $field
      */
-    private string $field;
+    private string $referencedField;
 
 
     /**
      * The constuctor
      * 
      * @author ikubicki
-     * @param db $db
-     * @param string $class
      * @param string $field
+     * @param string $collection
+     * @param string $referencedField
      */
-    public function __construct(db $db, string $class, string $field)
+    public function __construct(string $field, string $collection, string $referencedField)
     {
-        $this->db = $db;
-        $this->collection = substr($class, strrpos($class, '\\') + 1);
         $this->field = $field;
+        $this->collection = $collection;
+        $this->referencedField = $referencedField;
     }
 
     /**
@@ -54,6 +54,8 @@ class reference
         if (!$referenceId) {
             return null;
         }
-        return $this->db->collection($this->collection)->findOne($referenceId);
+        return $sibling->db()->collection($this->collection)->findOne(
+            [$this->referencedField => $referenceId]
+        );
     }
 }

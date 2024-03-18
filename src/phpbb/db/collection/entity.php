@@ -3,7 +3,9 @@
 namespace phpbb\db\collection;
 
 use JsonSerializable;
+use phpbb\db;
 use phpbb\db\collection;
+use phpbb\db\collection\field\enum;
 
 /**
  * Entity class
@@ -159,12 +161,23 @@ class entity implements JsonSerializable
     }
 
     /**
+     * Returns a database handler
+     * 
+     * @author ikubicki
+     * @return db
+     */
+    public function db(): db
+    {
+        return $this->collection->db;
+    }
+
+    /**
      * Adds field definiton
      * 
      * @author ikubicki
      * @param string $name
      * @param mixed $default
-     * @param string $type
+     * @param string|enum $type
      * @param bool $writable
      * @param int $behaviour
      * @return entity
@@ -172,7 +185,7 @@ class entity implements JsonSerializable
     protected function field(
         string $name, 
         mixed $default = null, 
-        string $type = field::TYPE_STRING, 
+        string|enum $type = field::TYPE_STRING, 
         bool $writable = true,
         int $behaviour = null,
     ): entity
@@ -190,16 +203,26 @@ class entity implements JsonSerializable
      * 
      * @author ikubicki
      * @param string $field
-     * @param string $collection
+     * @param string $class
      * @param string $referencedField
      * @return entity
      */
-    protected function reference(string $field, string $collection, string $referencedField): entity
+    protected function reference(string $field, string $class, string $referencedField): entity
     {
-        $this->references[$field] = new reference(
-            $this->collection->db, $collection, $referencedField
-        );
+        $collection = substr($class, strrpos($class, '\\') + 1);
+        $this->references[$field] = new reference($field, $collection, $referencedField);
         return $this;
+    }
+
+    /**
+     * Returns a collection of registered references
+     * 
+     * @author ikubicki
+     * @return array
+     */
+    public function getReferences(): array
+    {
+        return $this->references;
     }
 
     /**
@@ -209,7 +232,7 @@ class entity implements JsonSerializable
      * @param string $field
      * @return ?entity
      */
-    public function getReference(string $field): ?entity
+    public function getReferencedEntity(string $field): ?entity
     {
         if (isset($this->references[$field])) {
             return null;
