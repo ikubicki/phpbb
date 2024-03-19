@@ -23,6 +23,15 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"type\": \"password\",\n    \"identifier\": \"admin\",\n    \"credential\": \"qwerty\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "http://localhost:8080/auth.php/authorize",
 					"protocol": "http",
@@ -292,6 +301,89 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "GET /organisations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set('phpbb.organisation_uuid', pm.response.json()[0].uuid)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/auth.php/organisations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"organisations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /organisations/*",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/auth.php/organisations/{{phpbb.organisation_uuid}}?references=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"organisations",
+						"{{phpbb.organisation_uuid}}"
+					],
+					"query": [
+						{
+							"key": "references",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"variable": [
@@ -301,6 +393,10 @@
 		},
 		{
 			"key": "phpbb.user_uuid",
+			"value": ""
+		},
+		{
+			"key": "phpbb.organisation_uuid",
 			"value": ""
 		}
 	]
