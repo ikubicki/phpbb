@@ -50,6 +50,11 @@ class request
     public ?string $contentLength;
 
     /**
+     * @var request\body $body
+     */
+    public request\body $body;
+
+    /**
      * @var uri $uri
      */
     public uri $uri;
@@ -75,6 +80,7 @@ class request
         $this->method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $this->contentType = $_SERVER['CONTENT_TYPE'] ?? 'application/json';
         $this->contentLength = $_SERVER['CONTENT_LENGTH'] ?? null;
+        $this->body = new request\body($this);
         $this->context = new context(new stdClass());
         $this->uri = new uri();
     }
@@ -120,6 +126,7 @@ class request
      * @param bool $unserialize
      * @return mixed
      */
+    /*
     public function body(bool $unserialize = true): mixed
     {
         $contents = file_get_contents('php://input');
@@ -133,6 +140,7 @@ class request
         }
         return $contents;
     }
+    */
 
     /**
      * Returns query parameter value

@@ -12,7 +12,8 @@ class api extends app
     {
         $this->plugin('db')
             ->registerSchema(schemas\users::class)
-            ->registerSchema(schemas\organisations::class);
+            ->registerSchema(schemas\organisations::class)
+            ->registerSchema(schemas\authentications::class);
     }
 
     private function setupRoutes()

@@ -20,7 +20,8 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./data/mongodb:/data/db
+    #  - ./data/mongodb:/data/db
+      - ./tests/fixtures/mongodb/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
   mongoui:
     image: mongo-express

@@ -6,6 +6,7 @@ use phpbb\db;
 use phpbb\db\query;
 use phpbb\db\collection\entity;
 use phpbb\db\connectors\records;
+use stdClass;
 
 /**
  * Database collection class
@@ -79,9 +80,9 @@ class collection
      * @param ?array $filters
      * @param array $options
      * @param array $fields
-     * @return ?entity
+     * @return object
      */
-    public function findOne(?array $filters, ?array $options = [], ?array $fields = []): ?entity
+    public function findOne(?array $filters, ?array $options = [], ?array $fields = []): object
     {
         $record = $this
             ->query($filters, $options, $fields)

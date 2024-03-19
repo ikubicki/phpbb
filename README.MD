@@ -31,10 +31,7 @@ Authorization within Identity and phpBB service will be based on JWT tokens. Bot
 ### Setup
 
 There's no setup script at this stage. To run Identity service, just run `docker compose up -d` command. 
-
-On MongoDB server, add a `phpbb-auth` database.
-
-In new database add `authentication`, `members`, `organisations`, `policies` and `users` collections.
+You may also consider importing a Postman collection from `tests/` directory. 
 
 ## phpBB service
 

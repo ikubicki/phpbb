@@ -50,7 +50,7 @@ class standardMethods
     {
         try {
             $record = $app->plugin('db')->collection($this->collection)->create();
-            $record->setMany((array) $request->body());
+            $record->setMany($request->body->toArray());
             $record->save();
         }
         catch(DuplicateError) {
@@ -94,7 +94,7 @@ class standardMethods
         if (!$record) {
             throw new ResourceNotFound($request);
         }
-        $record->setMany((array) $request->body());
+        $record->setMany($request->body->toArray());
         $record->save();
         return $response->status($response::OK)->send($record);
     }

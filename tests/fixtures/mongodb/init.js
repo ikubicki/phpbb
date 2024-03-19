@@ -59,3 +59,17 @@ db.organisations.insertMany([
     }
 ])
 db.organisations.createIndex({ uuid: 1, name: 1 }, { unique: true })
+
+// authentications
+
+db.createCollection('authentications')
+db.authentications.insertMany([
+    {
+        "type": "password",
+        "identifier": "admin",
+        "kid": "b0208cdc-3750-4b1a-a552-0665ab7d8c90",
+        "owner": "cfe2134e-1e69-47c5-b12d-05d47b94ff0c",
+        "signature": "v1.acffae7125ad094e11e146690e7b6aae644355b75c40dbe25dd56c5731fa0436"
+    }
+])
+db.organisations.createIndex({ type: 1, id: 1 }, { unique: true })
