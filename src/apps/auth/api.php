@@ -24,9 +24,12 @@ class api extends app
                 new JwtAuthMiddleware(),
             ]
         ]);
+
         $this->post('/authorize', require('modules/authorize.php'));
-        (new modules\users($this))->setup();
+        
         (new modules\organisations($this))->setup();
+        (new modules\permissions($this))->setup();
+        (new modules\users($this))->setup();
     }
 
     protected function setup($config): void

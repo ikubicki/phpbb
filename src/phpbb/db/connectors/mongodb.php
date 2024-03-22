@@ -301,9 +301,19 @@ class mongodb extends abstraction
         ));
     }
 
-    private function convertValues($values): stdClass
+    /**
+     * Converts filter values
+     * 
+     * @author ikubicki
+     * @param array $values
+     * @return stdClass
+     */
+    private function convertValues(array $values): stdClass
     {
         foreach($values as $key => $value) {
+            if (is_array($value)) {
+                $values[$key] = [ '$in' => $value ];
+            }
             if ($value instanceof DateTimeInterface) {
                 $values[$key] = new UTCDateTime($value->getTimestamp() * 1000);
             }

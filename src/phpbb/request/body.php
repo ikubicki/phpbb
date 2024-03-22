@@ -2,7 +2,6 @@
 
 namespace phpbb\request;
 
-use phpbb\config\item;
 use phpbb\core\keyvalue;
 use phpbb\request;
 
@@ -27,7 +26,7 @@ class body
     {
         $contents = file_get_contents('php://input');
         if ($request->isJson()) {
-            $this->data = new keyvalue(json_decode($contents));
+            $this->data = new keyvalue((object) json_decode($contents));
         }
         else if ($request->isXml()) {
             $this->data = simplexml_load_string($contents);
@@ -79,6 +78,9 @@ class body
      */
     public function toArray(): array
     {
+        if ($this->data instanceof keyvalue) {
+            return $this->data->jsonSerialize();
+        }
         return (array) $this->data;
     }
 }

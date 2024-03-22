@@ -10,6 +10,18 @@ use JsonSerializable;
  */
 class records extends ArrayIterator implements JsonSerializable
 {
+    
+    /**
+     * Returns an array
+     * 
+     * @author ikubicki
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return (array) $this;
+    }
+
     /**
      * Hydrates records into entities
      * 

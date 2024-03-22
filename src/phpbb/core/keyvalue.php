@@ -2,12 +2,13 @@
 
 namespace phpbb\core;
 
+use JsonSerializable;
 use stdClass;
 
 /**
  * Key value store class
  */
-class keyvalue
+class keyvalue implements JsonSerializable
 {
     /**
      * @var ?stdClass $data
@@ -36,6 +37,17 @@ class keyvalue
     {
         $this->data = $data;
         return $this;
+    }
+
+    /**
+     * JSON serialization method
+     * 
+     * @author ikubicki
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return (array) $this->data;
     }
 
     /**
