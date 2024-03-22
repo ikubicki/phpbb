@@ -14,10 +14,10 @@ class JwtAuthMiddleware
      * 
      * @author ikubicki
      * @param request
-     * 
+     * @return request
      * @throws NotAuthorized
      */
-    public function execute(request $request)
+    public function execute(request $request): request
     {
         $authorization = $request->client->bearer();
         $payload = jwtAuth::getPayload($authorization);
@@ -25,5 +25,6 @@ class JwtAuthMiddleware
             throw new NotAuthorized($request);
         }
         $request->context->set('auth', $payload);
+        return $request;
     }
 }

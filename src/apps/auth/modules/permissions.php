@@ -20,7 +20,6 @@ class permissions
 
     public function setup()
     {
-
         $options = [
             'preExecution' => [
                 new JwtAuthMiddleware(),

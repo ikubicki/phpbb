@@ -18,15 +18,7 @@ class api extends app
 
     private function setupRoutes()
     {
-
-        $this->get('/me', require('modules/me.php'), [
-            'preExecution' => [
-                new JwtAuthMiddleware(),
-            ]
-        ]);
-
-        $this->post('/authorize', require('modules/authorize.php'));
-        
+        (new modules\authentications($this))->setup();
         (new modules\organisations($this))->setup();
         (new modules\permissions($this))->setup();
         (new modules\users($this))->setup();

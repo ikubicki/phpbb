@@ -3,6 +3,7 @@
 namespace apps\auth\modules;
 
 use phpbb\apps\api\standardMethods;
+use phpbb\middleware\JwtAuthMiddleware;
 
 class organisations extends standardMethods
 {
@@ -11,10 +12,15 @@ class organisations extends standardMethods
 
     public function setup()
     {
-        $this->app->get('/' . self::COLLECTION, [$this, 'getRecords']);
-        $this->app->post('/' . self::COLLECTION, [$this, 'createRecord']);
-        $this->app->get('/' . self::COLLECTION . '/:id', [$this, 'getRecord']);
-        $this->app->patch('/' . self::COLLECTION . '/:id', [$this, 'patchRecord']);
-        $this->app->delete('/' . self::COLLECTION . '/:id', [$this, 'deleteRecord']);
+        $options = [
+            'preExecution' => [
+                new JwtAuthMiddleware(),
+            ]
+        ];
+        $this->app->get('/' . self::COLLECTION, [$this, 'getRecords'], $options);
+        $this->app->post('/' . self::COLLECTION, [$this, 'createRecord'], $options);
+        $this->app->get('/' . self::COLLECTION . '/:id', [$this, 'getRecord'], $options);
+        $this->app->patch('/' . self::COLLECTION . '/:id', [$this, 'patchRecord'], $options);
+        $this->app->delete('/' . self::COLLECTION . '/:id', [$this, 'deleteRecord'], $options);
     }
 }

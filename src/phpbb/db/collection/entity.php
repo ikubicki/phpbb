@@ -44,6 +44,11 @@ class entity implements JsonSerializable
     protected array $indexes = [];
 
     /**
+     * @var array $hide
+     */
+    protected array $hide = ['$id'];
+
+    /**
      * @var array $hooks
      */
     protected array $hooks = [];
@@ -146,7 +151,18 @@ class entity implements JsonSerializable
     {
         $data = (array) $this->data;
         unset($data['$id']);
+        $data = array_filter(
+            $data,
+            [$this, 'filterHiddenFields'],
+            ARRAY_FILTER_USE_KEY
+        );
+
         return $data;
+    }
+
+    private function filterHiddenFields($field)
+    {
+        return !in_array($field, $this->hide);
     }
 
     /**
@@ -180,7 +196,7 @@ class entity implements JsonSerializable
      * @param string|enum $type
      * @param bool $writable
      * @param int $behaviour
-     * @return entity
+     * @return static
      */
     protected function field(
         string $name, 
@@ -188,7 +204,7 @@ class entity implements JsonSerializable
         string|enum $type = field::TYPE_STRING, 
         bool $writable = true,
         int $behaviour = null,
-    ): entity
+    ): static
     {
         $this->fields[$name] = new field($name, $default, $type, $writable, $behaviour);
         $this->data[$name] = $this->fields[$name]->default();
@@ -205,9 +221,9 @@ class entity implements JsonSerializable
      * @param string $field
      * @param string $class
      * @param string $referencedField
-     * @return entity
+     * @return static
      */
-    protected function reference(string $field, string $class, string $referencedField): entity
+    protected function reference(string $field, string $class, string $referencedField): static
     {
         $collection = substr($class, strrpos($class, '\\') + 1);
         $this->references[$field] = new reference($field, $collection, $referencedField);
@@ -246,11 +262,24 @@ class entity implements JsonSerializable
      * @author ikubicki
      * @param string $field
      * @param string $type
-     * @return entity
+     * @return static
      */
-    protected function index(string $field, string $type = field::INDEX_FIELD): entity
+    protected function index(string $field, string $type = field::INDEX_FIELD): static
     {
         $this->indexes[$field] = $type;
+        return $this;
+    }
+
+    /**
+     * Adds hidden fields flag
+     * 
+     * @author ikubicki
+     * @param array $fields
+     * @return static
+     */
+    protected function hide(array $fields): static 
+    {
+        $this->hide = [...$this->hide, ...$fields];
         return $this;
     }
 
