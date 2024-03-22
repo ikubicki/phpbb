@@ -1,6 +1,6 @@
 <?php
 
-namespace apps\auth\modules;
+namespace phpbb\apps\api;
 
 use phpbb\app;
 use phpbb\db\errors\DuplicateError;
@@ -10,25 +10,19 @@ use phpbb\request;
 use phpbb\response;
 use phpbb\errors\ResourceNotFound;
 
-class standardMethods
+abstract class standardMethods
 {
 
+    const COLLECTION = 'undefined';
+
     protected app $app;
-    protected string $collection = '';
 
     public function __construct(app $app = null)
     {
         $this->app = $app;
     }
 
-    public function setup()
-    {
-        $this->app->get('/' . $this->collection, [$this, 'getRecords']);
-        $this->app->post('/' . $this->collection, [$this, 'createRecord']);
-        $this->app->get('/' . $this->collection . '/:id', [$this, 'getRecord']);
-        $this->app->patch('/' . $this->collection . '/:id', [$this, 'patchRecord']);
-        $this->app->delete('/' . $this->collection . '/:id', [$this, 'deleteRecord']);
-    }
+    abstract public function setup();
 
     public function getRecords(request $request, response $response, app $app)
     {
@@ -42,14 +36,14 @@ class standardMethods
         if ($request->query('creator')) {
             $filters['creator'] = $request->query('creator');
         }
-        $records = $app->plugin('db')->collection($this->collection)->find($filters);
+        $records = $app->plugin('db')->collection(static::COLLECTION)->find($filters);
         return $response->status($response::OK)->send($records);
     }
 
     public function createRecord(request $request, response $response, app $app)
     {
         try {
-            $record = $app->plugin('db')->collection($this->collection)->create();
+            $record = $app->plugin('db')->collection(static::COLLECTION)->create();
             $record->setMany($request->body->toArray());
             $record->save();
         }
@@ -67,7 +61,7 @@ class standardMethods
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);
         }
-        $collection = $app->plugin('db')->collection($this->collection);
+        $collection = $app->plugin('db')->collection(static::COLLECTION);
         $record = $collection->findOne([
             'uuid' => $request->uri->param('id')
         ]);
@@ -88,7 +82,7 @@ class standardMethods
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);
         }
-        $record = $app->plugin('db')->collection($this->collection)->findOne([
+        $record = $app->plugin('db')->collection(static::COLLECTION)->findOne([
             'uuid' => $request->uri->param('id')
         ]);
         if (!$record) {
@@ -104,7 +98,7 @@ class standardMethods
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);
         }
-        $record = $app->plugin('db')->collection($this->collection)->findOne([
+        $record = $app->plugin('db')->collection(static::COLLECTION)->findOne([
             'uuid' => $request->uri->param('id')
         ]);
         if (!$record) {

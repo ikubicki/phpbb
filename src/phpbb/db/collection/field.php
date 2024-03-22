@@ -13,6 +13,7 @@ use Ramsey\Uuid\Uuid;
  */
 class field
 {
+    const TYPE_BOOLEAN = 'bool';
     const TYPE_STRING = 'string';
     const TYPE_INTEGER = 'integer';
     const TYPE_FLOAT = 'float';
@@ -142,6 +143,7 @@ class field
             throw new FieldError(sprintf(FieldError::NOT_WRITABLE, $this->name));
         }
         switch($this->type) {
+            case self::TYPE_BOOLEAN: return $value === true || $value == 1;
             case self::TYPE_UUID: return (string) $value;
             case self::TYPE_STRING: return (string) $value;
             case self::TYPE_UNIXTIME:

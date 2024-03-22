@@ -14,6 +14,7 @@ class organisations extends entity
             ->field('type', 'group', field::enum(['group', 'team', 'set']))
             ->field('name')
             ->field('description')
+            ->field('default', false, field::TYPE_BOOLEAN)
             ->field('creator', null, field::TYPE_UUID)
             ->field('created', null, field::TYPE_UNIXTIME, false, field::ON_CREATE)
             ->field('modified', null, field::TYPE_UNIXTIME, false, field::ON_UPDATE)

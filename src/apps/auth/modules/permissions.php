@@ -3,13 +3,10 @@
 namespace apps\auth\modules;
 
 use phpbb\app;
-use phpbb\config;
 use phpbb\core\accessRules;
-use phpbb\errors\BadRequest;
 use phpbb\middleware\JwtAuthMiddleware;
 use phpbb\request;
 use phpbb\response;
-use phpbb\utils\jwtAuth;
 
 class permissions
 {

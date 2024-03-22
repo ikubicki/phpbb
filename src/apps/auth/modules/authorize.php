@@ -1,7 +1,6 @@
 <?php
 
 use phpbb\app;
-use phpbb\config;
 use phpbb\errors\BadRequest;
 use phpbb\request;
 use phpbb\response;
