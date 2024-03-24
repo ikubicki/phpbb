@@ -19,27 +19,39 @@ class users extends standardMethods
     public function setup()
     {
         $this->app->get('/users', [$this, 'getRecords'], [
-            new jwtAuthMiddleware(),
-            new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            ]
         ]);
         $this->app->post('/users', [$this, 'createRecord'], [
-            new jwtAuthMiddleware(),
-            new permissionsMiddleware([AccessRulesUsers::CREATE]),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            ]
         ]);
         $this->app->get('/users/:id', [$this, 'getRecord'], [
-            new jwtAuthMiddleware(),
-            new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            ]
         ]);
         $this->app->patch('/users/:id', [$this, 'patchRecord'], [
-            new jwtAuthMiddleware(),
-            new permissionsMiddleware([AccessRulesUsers::EDIT]),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            ]
         ]);
         $this->app->delete('/users/:id', [$this, 'deleteRecord'], [
-            new jwtAuthMiddleware(),
-            new permissionsMiddleware([AccessRulesUsers::DELETE]),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            ]
         ]);
         $this->app->get('/me', [$this, 'getMe'], [
-            new jwtAuthMiddleware(),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+            ]
         ]);
     }
 

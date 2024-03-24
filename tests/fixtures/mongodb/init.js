@@ -1,8 +1,24 @@
 db = new Mongo().getDB("phpbb-auth")
 
+// collections
+
+db.createCollection('authentications')
+db.createCollection('memberships')
+db.createCollection('organisations')
+db.createCollection('policies')
+db.createCollection('users')
+
+// indexes
+
+db.authentications.createIndex({ type: 1, id: 1 }, { unique: true })
+db.memberships.createIndex({ member: 1 }, { unique: true })
+db.organisations.createIndex({ uuid: 1, name: 1 }, { unique: true })
+db.policies.createIndex({ principal: 1 })
+db.users.createIndex({ uuid: 1 }, { unique: true })
+db.users.createIndex({ name: 1 }, { unique: true })
+
 // users
 
-db.createCollection('users')
 db.users.insertMany([
     {
         uuid: '255612c9-aa2c-4dec-b4c3-9f59831fd5c6',
@@ -23,12 +39,9 @@ db.users.insertMany([
         }
     }
 ])
-db.users.createIndex({ uuid: 1 }, { unique: true })
-db.users.createIndex({ name: 1 }, { unique: true })
 
 // organisations
 
-db.createCollection('organisations')
 db.organisations.insertMany([
     {
         uuid: 'b6f5fd65-1510-4a98-bd14-61740cb834f8',
@@ -68,11 +81,9 @@ db.organisations.insertMany([
         modified: null
     }
 ])
-db.organisations.createIndex({ uuid: 1, name: 1 }, { unique: true })
 
 // authentications
 
-db.createCollection('authentications')
 db.authentications.insertMany([
     {
         "type": "password",
@@ -82,15 +93,13 @@ db.authentications.insertMany([
         "signature": "v1.acffae7125ad094e11e146690e7b6aae644355b75c40dbe25dd56c5731fa0436"
     }
 ])
-db.authentications.createIndex({ type: 1, id: 1 }, { unique: true })
 
 // memberships
 
-db.createCollection('memberships')
 db.memberships.insertMany([
     {
-        member: 'cfe2134e-1e69-47c5-b12d-05d47b94ff0c',
-        organisations: [
+        "member": 'cfe2134e-1e69-47c5-b12d-05d47b94ff0c',
+        "organisations": [
             'b6f5fd65-1510-4a98-bd14-61740cb834f8',
             'bd80d180-e424-425d-9ed9-75a8236a8a8d',
             '17580941-d068-4004-9468-e959778d2b7e',
@@ -98,19 +107,17 @@ db.memberships.insertMany([
         ]
     },
     {
-        member: 'a3d47af6-808e-4f9e-9d04-d6afb6120034',
-        organisations: [
+        "member": 'a3d47af6-808e-4f9e-9d04-d6afb6120034',
+        "organisations": [
             'b6f5fd65-1510-4a98-bd14-61740cb834f8',
             '17580941-d068-4004-9468-e959778d2b7e',
             '6091db6f-8d63-417a-9605-b39eb264efc4'
         ]
     }
 ])
-memberships.createIndex({ member: 1 }, { unique: true })
 
 // policies
 
-db.createCollection('policies')
 db.policies.insertMany([
     {
         principal: 'b6f5fd65-1510-4a98-bd14-61740cb834f8',
@@ -122,15 +129,15 @@ db.policies.insertMany([
         ]
     },
     {
-        principal: '6091db6f-8d63-417a-9605-b39eb264efc4',
-        policies: [
+        "principal": '6091db6f-8d63-417a-9605-b39eb264efc4',
+        "policies": [
             {
-                resource: '*',
-                access: 'users.view'
+                "resource": '*',
+                "access": 'users.view'
             },
             {
-                resource: '*',
-                access: 'organisations.view'
+                "resource": '*',
+                "access": 'organisations.view'
             },
             {
                 resources: [
@@ -163,3 +170,4 @@ db.policies.insertMany([
         ]
     }
 ])
+

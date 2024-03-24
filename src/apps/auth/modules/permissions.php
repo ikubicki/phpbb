@@ -22,10 +22,14 @@ class permissions
     public function setup()
     {
         $this->app->get('/permissions', [$this, 'getPermissions'], [
-            new jwtAuthMiddleware(),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+            ]
         ]);
         $this->app->post('/permissions', [$this, 'postPermissions'], [
-            new jwtAuthMiddleware(),
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+            ]
         ]);
     }
 

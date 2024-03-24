@@ -82,7 +82,7 @@ class collection
      * @param array $fields
      * @return object
      */
-    public function findOne(?array $filters, ?array $options = [], ?array $fields = []): object
+    public function findOne(?array $filters, ?array $options = [], ?array $fields = []): ?object
     {
         $record = $this
             ->query($filters, $options, $fields)
