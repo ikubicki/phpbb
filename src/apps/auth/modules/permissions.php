@@ -42,6 +42,6 @@ class permissions
         $auth = $request->context('auth');
         $accessRules = new accessRules();
         $accessRules->loadPermissions($app, $auth->raw('sub'));
-        $response->send($accessRules->verify($request->body->toArray()));
+        $response->send($accessRules->getRules($request->body->toArray()));
     }
 }

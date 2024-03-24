@@ -6,7 +6,7 @@ use phpbb\request;
 use phpbb\errors\NotAuthorized;
 use phpbb\utils\jwtAuth;
 
-class JwtAuthMiddleware
+class jwtAuthMiddleware
 {
     /**
      * Executes JWT validation
@@ -25,6 +25,7 @@ class JwtAuthMiddleware
             throw new NotAuthorized($request);
         }
         $request->context->set('auth', $payload);
+        $request->context->set('sub', $payload->sub ?? null);
         return $request;
     }
 }

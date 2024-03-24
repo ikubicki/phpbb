@@ -70,9 +70,9 @@ class resource implements JsonSerializable
      * 
      * @author ikubicki
      * @param array $accessRules
-     * @return resource
+     * @return static
      */
-    public function addAccessRules(array $accessRules): resource
+    public function addAccessRules(array $accessRules): static
     {
         $this->accessRules = array_unique(array_merge(
             $this->accessRules, 

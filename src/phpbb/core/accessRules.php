@@ -175,28 +175,42 @@ class accessRules implements JsonSerializable
     }
     
     /**
-     * Returns permissions for given uuids
+     * Returns access rules for given uuids
      *
      * @author ikubicki
      * @param array $uuids
      * @return array
      */
-    public function verify(array $uuids): array
+    public function getRules(array $resourceIds): array
     {
         $results = [];
-        foreach ($uuids as $uuid) {
-            list($category, $id) = explode(':', $uuid);
-            if (empty($this->resources[$category])) {
-                $results[$uuid] = [];
+        foreach ($resourceIds as $resourceId) {
+            list($resource) = explode(':', $resourceId);
+            if (empty($this->resources[$resource])) {
+                $results[$resourceId] = [];
                 continue;
             }
-            if (isset($this->resources[$category][$uuid])) {
-                $results[$uuid] = $this->resources[$category][$uuid]->getAccessRules();
+            if (isset($this->resources[$resource][$resourceId])) {
+                $results[$resourceId] = $this->resources[$resource][$resourceId]->getAccessRules();
             }
-            if (isset($this->resources[$category][resource::ANY])) {
-                $results[$uuid] = $this->resources[$category][resource::ANY]->getAccessRules();
+            if (isset($this->resources[$resource][resource::ANY])) {
+                $results[$resourceId] = $this->resources[$resource][resource::ANY]->getAccessRules();
             }
         }
         return $results;
+    }
+
+    /**
+     * Checks if rule exists for given resource
+     * 
+     * @author ikubicki
+     * @param string $resourceId
+     * @param string $rule
+     * @return bool
+     */
+    public function has(string $resourceId, string $rule): bool
+    {
+        $rules = $this->getRules([$resourceId]);
+        return in_array($rule, $rules[$resourceId]);
     }
 }

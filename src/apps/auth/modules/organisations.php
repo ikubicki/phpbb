@@ -3,7 +3,9 @@
 namespace apps\auth\modules;
 
 use phpbb\apps\api\standardMethods;
-use phpbb\middleware\JwtAuthMiddleware;
+use phpbb\core\accessRules\organisations as AccessRulesOrganisations;
+use phpbb\middleware\jwtAuthMiddleware;
+use phpbb\middleware\permissionsMiddleware;
 
 class organisations extends standardMethods
 {
@@ -12,15 +14,47 @@ class organisations extends standardMethods
 
     public function setup()
     {
-        $options = [
+        $this->app->get('/organisations', [$this, 'getRecords'], [
             'preExecution' => [
-                new JwtAuthMiddleware(),
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::VIEW]),
             ]
-        ];
-        $this->app->get('/' . self::COLLECTION, [$this, 'getRecords'], $options);
-        $this->app->post('/' . self::COLLECTION, [$this, 'createRecord'], $options);
-        $this->app->get('/' . self::COLLECTION . '/:id', [$this, 'getRecord'], $options);
-        $this->app->patch('/' . self::COLLECTION . '/:id', [$this, 'patchRecord'], $options);
-        $this->app->delete('/' . self::COLLECTION . '/:id', [$this, 'deleteRecord'], $options);
+        ]);
+        $this->app->get('/organisations/:id', [$this, 'getRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::VIEW]),
+            ]
+        ]);
+        $this->app->get('/organisations/:id/members', [$this, 'getRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::VIEW]),
+            ]
+        ]);
+        $this->app->post('/organisations', [$this, 'createRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::CREATE]),
+            ]
+        ]);
+        $this->app->patch('/organisations/:id', [$this, 'patchRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::EDIT]),
+            ]
+        ]);
+        $this->app->delete('/organisations/:id', [$this, 'deleteRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::DELETE]),
+            ]
+        ]);
+        $this->app->post('/organisations/:id/members', [$this, 'createRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::EXTEND]),
+            ]
+        ]);
     }
 }

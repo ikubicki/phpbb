@@ -4,10 +4,11 @@ namespace apps\auth\modules;
 
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
-use phpbb\errors\BadRequest;
+use phpbb\core\accessRules\users as AccessRulesUsers;
 use phpbb\errors\NotAuthorized;
 use phpbb\errors\ResourceNotFound;
 use phpbb\middleware\JwtAuthMiddleware;
+use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
 use phpbb\response;
 
@@ -17,17 +18,29 @@ class users extends standardMethods
 
     public function setup()
     {
-        $options = [
-            'preExecution' => [
-                new JwtAuthMiddleware(),
-            ]
-        ];
-        $this->app->get('/' . self::COLLECTION, [$this, 'getRecords'], $options);
-        $this->app->post('/' . self::COLLECTION, [$this, 'createRecord'], $options);
-        $this->app->get('/' . self::COLLECTION . '/:id', [$this, 'getRecord'], $options);
-        $this->app->patch('/' . self::COLLECTION . '/:id', [$this, 'patchRecord'], $options);
-        $this->app->delete('/' . self::COLLECTION . '/:id', [$this, 'deleteRecord'], $options);
-        $this->app->get('/me', [$this, 'getMe'], $options);
+        $this->app->get('/users', [$this, 'getRecords'], [
+            new jwtAuthMiddleware(),
+            new permissionsMiddleware([AccessRulesUsers::VIEW]),
+        ]);
+        $this->app->post('/users', [$this, 'createRecord'], [
+            new jwtAuthMiddleware(),
+            new permissionsMiddleware([AccessRulesUsers::CREATE]),
+        ]);
+        $this->app->get('/users/:id', [$this, 'getRecord'], [
+            new jwtAuthMiddleware(),
+            new permissionsMiddleware([AccessRulesUsers::VIEW]),
+        ]);
+        $this->app->patch('/users/:id', [$this, 'patchRecord'], [
+            new jwtAuthMiddleware(),
+            new permissionsMiddleware([AccessRulesUsers::EDIT]),
+        ]);
+        $this->app->delete('/users/:id', [$this, 'deleteRecord'], [
+            new jwtAuthMiddleware(),
+            new permissionsMiddleware([AccessRulesUsers::DELETE]),
+        ]);
+        $this->app->get('/me', [$this, 'getMe'], [
+            new jwtAuthMiddleware(),
+        ]);
     }
 
     public function getMe(request $request, response $response, app $app)
