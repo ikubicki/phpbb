@@ -4,8 +4,10 @@ namespace apps\auth\modules;
 
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
+use phpbb\core\accessRules\users;
 use phpbb\errors\BadRequest;
 use phpbb\middleware\JwtAuthMiddleware;
+use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
 use phpbb\response;
 use phpbb\utils\jwtAuth;
@@ -16,16 +18,46 @@ class authentications extends standardMethods
 
     public function setup()
     {
-        $options = [
+        $this->app->get('/' . self::COLLECTION, [$this, 'getRecords'], [
             'preExecution' => [
                 new JwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    users::CREATE
+                ])
             ]
-        ];
-        $this->app->get('/' . self::COLLECTION, [$this, 'getRecords'], $options);
-        $this->app->post('/' . self::COLLECTION, [$this, 'createRecord'], $options);
-        $this->app->get('/' . self::COLLECTION . '/:id', [$this, 'getRecord'], $options);
-        $this->app->patch('/' . self::COLLECTION . '/:id', [$this, 'patchRecord'], $options);
-        $this->app->delete('/' . self::COLLECTION . '/:id', [$this, 'deleteRecord'], $options);
+        ]);
+        $this->app->post('/' . self::COLLECTION, [$this, 'createRecord'], [
+            'preExecution' => [
+                new JwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    users::EDIT
+                ])
+            ]
+        ]);
+        $this->app->get('/' . self::COLLECTION . '/:id', [$this, 'getRecord'], [
+            'preExecution' => [
+                new JwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    users::VIEW
+                ])
+            ]
+        ]);
+        $this->app->patch('/' . self::COLLECTION . '/:id', [$this, 'patchRecord'], [
+            'preExecution' => [
+                new JwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    users::EDIT
+                ])
+            ]
+        ]);
+        $this->app->delete('/' . self::COLLECTION . '/:id', [$this, 'deleteRecord'], [
+            'preExecution' => [
+                new JwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    users::EDIT
+                ])
+            ]
+        ]);
         $this->app->post('/authorize', [$this, 'postAuthorize']);
     }
 

@@ -11,9 +11,10 @@ class resource implements JsonSerializable
     const RESOURCES = [
         categories::RESOURCE,
         organisations::RESOURCE,
+        policies::RESOURCE,
+        users::RESOURCE,
         tags::RESOURCE,
         threads::RESOURCE,
-        users::RESOURCE,
     ];
     const RESOURCE = '';
     const ACCESS_RULES = [];

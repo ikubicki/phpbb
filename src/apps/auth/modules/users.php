@@ -4,6 +4,7 @@ namespace apps\auth\modules;
 
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
+use phpbb\core\accessRules\policies;
 use phpbb\core\accessRules\users as AccessRulesUsers;
 use phpbb\errors\NotAuthorized;
 use phpbb\errors\ResourceNotFound;
@@ -34,6 +35,18 @@ class users extends standardMethods
             'preExecution' => [
                 new jwtAuthMiddleware(),
                 new permissionsMiddleware([AccessRulesUsers::VIEW]),
+            ]
+        ]);
+        $this->app->get('/users/:id/permissions', [$this, 'getRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([policies::VIEW]),
+            ]
+        ]);
+        $this->app->patch('/users/:id/permissions', [$this, 'getRecord'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([policies::EDIT]),
             ]
         ]);
         $this->app->patch('/users/:id', [$this, 'patchRecord'], [

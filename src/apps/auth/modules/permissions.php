@@ -4,6 +4,7 @@ namespace apps\auth\modules;
 
 use phpbb\app;
 use phpbb\core\accessRules;
+use phpbb\core\accessRules\policies;
 use phpbb\middleware\JwtAuthMiddleware;
 use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
@@ -24,11 +25,17 @@ class permissions
         $this->app->get('/permissions', [$this, 'getPermissions'], [
             'preExecution' => [
                 new jwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    policies::VIEW,
+                ])
             ]
         ]);
         $this->app->post('/permissions', [$this, 'postPermissions'], [
             'preExecution' => [
                 new jwtAuthMiddleware(),
+                new permissionsMiddleware([
+                    policies::VIEW,
+                ])
             ]
         ]);
     }
