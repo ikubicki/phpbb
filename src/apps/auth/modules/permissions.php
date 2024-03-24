@@ -5,6 +5,7 @@ namespace apps\auth\modules;
 use phpbb\app;
 use phpbb\core\accessRules;
 use phpbb\middleware\JwtAuthMiddleware;
+use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
 use phpbb\response;
 
@@ -20,13 +21,12 @@ class permissions
 
     public function setup()
     {
-        $options = [
-            'preExecution' => [
-                new JwtAuthMiddleware(),
-            ]
-        ];
-        $this->app->get('/permissions', [$this, 'getPermissions'], $options);
-        $this->app->post('/permissions', [$this, 'postPermissions'], $options);
+        $this->app->get('/permissions', [$this, 'getPermissions'], [
+            new jwtAuthMiddleware(),
+        ]);
+        $this->app->post('/permissions', [$this, 'postPermissions'], [
+            new jwtAuthMiddleware(),
+        ]);
     }
 
     public function getPermissions(request $request, response $response, app $app)
