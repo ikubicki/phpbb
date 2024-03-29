@@ -1,1 +1,3 @@
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+RewriteEngine On
+RewriteRule ^a(/(.*?))?$ auth.php/$1

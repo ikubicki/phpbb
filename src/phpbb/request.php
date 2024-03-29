@@ -119,30 +119,6 @@ class request
     }
 
     /**
-     * Returns posted body contents
-     * Unserializes by default
-     * 
-     * @author ikubicki
-     * @param bool $unserialize
-     * @return mixed
-     */
-    /*
-    public function body(bool $unserialize = true): mixed
-    {
-        $contents = file_get_contents('php://input');
-        if ($contents && $unserialize) {
-            if ($this->isJson()) {
-                return json_decode($contents);
-            }
-            if ($this->isXml()) {
-                return simplexml_load_string($contents);
-            }
-        }
-        return $contents;
-    }
-    */
-
-    /**
      * Returns query parameter value
      * 
      * @author ikubicki
@@ -176,7 +152,7 @@ class request
      */
     public function cookie(string $name): ?string
     {
-        return $_COOKIE[$name] ?? null;
+        return $_COOKIE[str_replace(['-', '.'], '_', $name)] ?? null;
     }
 
     /**

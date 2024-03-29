@@ -25,7 +25,7 @@ class xml extends abstraction
     public function __toString(): string
     {
         $xml = $this->createDocument();
-        $this->load($xml, 'response', $this->response->body);
+        $this->load($xml, 'response', $this->response->body ?? null);
         return $xml->outputMemory(true);
     }
 
@@ -55,8 +55,11 @@ class xml extends abstraction
      */
     private function load(XMLWriter $xml, string $key, mixed $data): XMLWriter
     {
+        if (!$key) {
+            return $xml;
+        }
         if (is_object($data)) {
-            $data = (array) $data;
+            $data = json_decode(json_encode($data), true);
         }
         if (is_array($data)) {
             $xml->startElement($key);

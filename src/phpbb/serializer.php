@@ -61,6 +61,9 @@ class serializer
             if ($this->response->type) {
                 header('Content-Type: ' . $this->response->type);
             }
+            foreach($this->response->cookies as $name => $cookie) {
+                setcookie($name, $cookie['value'], $cookie['options'] ?? []);
+            }
             foreach($this->response->headers as $header => $value) {
                 header("$header: $value");
             }

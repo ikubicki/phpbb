@@ -11,6 +11,8 @@ class response
 
     const OK = 200;
     const NO_CONTENT = 204;
+    const FOUND = 302;
+    const REDIRECT = 302;
     const BAD_REQUEST = 400;
     const NOT_AUTHORIZED = 401;
     const NOT_FOUND = 404;
@@ -40,6 +42,11 @@ class response
      * @var array $headers
      */
     public array $headers = [];
+
+    /**
+     * @var array $cookies
+     */
+    public array $cookies = [];
 
     /**
      * @var ?string $type
@@ -203,6 +210,48 @@ class response
     public function type(?string $type): response
     {
         $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * Sets redirection headers and content
+     * 
+     * @author ikubicki
+     * @param string $url
+     * @return response
+     */
+    public function redirect(string $url): response
+    {
+        return $this->header('Location', $url)
+            ->type('text/html')
+            ->status(self::REDIRECT)
+            ->send(sprintf('<meta http-equiv="refresh" content="0; url=%s" />', $url));
+    }
+
+    /**
+     * Sets cookie
+     * 
+     * @author ikubicki
+     * @param string $name
+     * @param string $value
+     * @param array $options
+     * @return response
+     */
+    public function cookie(string $name, string $value, array $options = []): response
+    {
+        if (!array_key_exists('secure', $options)) {
+            $options['secure'] = $this->request->http->ssl;
+        }
+        if (!array_key_exists('httponly', $options)) {
+            $options['httponly'] = `true`;
+        }
+        if (!array_key_exists('samesite', $options)) {
+            $options['samesite'] = `true`;
+        }
+        $this->cookies[$name] = [
+            'value' => $value,
+            'options' => $options,
+        ];
         return $this;
     }
 

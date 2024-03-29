@@ -25,6 +25,11 @@ abstract class app
     private router $router;
 
     /**
+     * @var request $request
+     */
+    private request $request;
+
+    /**
      * @var array $plugins
      */
     private array $plugins = [];
@@ -131,7 +136,13 @@ abstract class app
     public function handle(request $request): response
     {
         $this->setup($this->config);
-        return $this->router->find($request)->execute($this);
+        $routes = $this->router->find($request);
+        $response = null;
+        foreach($routes as $route) {
+            $response = new response($request, $route, $response);
+        }
+        $this->request = $request;
+        return $response->execute($this);
     }
 
     /**
@@ -171,37 +182,12 @@ abstract class app
      * @param string $uri
      * @return string
      */
-    public function url(string $uri): string
+    public function url(string $uri, array $query = []): string
     {
-        return $this->getBaseUrl() . '/' . ltrim($uri, '/');
-    }
-
-    /**
-     * Returns a base URL for the application
-     * 
-     * @author ikubicki
-     * @return string
-     */
-    protected function getBaseUrl(): string
-    {
-        $protocol = $this->config->get('protocol', 'http');
-        $hostname = $this->config->get('hostname', 'localhost');
-        $port = $this->config->get('port', false);
-        $path = $this->config->get('path', 'path');
-        
-        if ($port == 80) {
-            $protocol = 'http';
+        if (count($query)) {
+            $uri .= (strpos($uri, '?') ? '&' : '?') . http_build_query($query);
         }
-        if ($port == 443) {
-            $protocol = 'https';
-        }
-        return sprintf(
-            '%s://%s%s%s', 
-            $protocol,
-            $hostname, 
-            $port ? ":$port" : '',
-            $path ? '/' . trim($path, '/') : $path
-        );
+        return $this->request->http->base . '/' . ltrim($uri, '/');
     }
 
     /**

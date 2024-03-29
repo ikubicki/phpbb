@@ -2,6 +2,7 @@
 
 namespace apps\auth\modules;
 
+use apps\auth\modules\authentications\factory;
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
 use phpbb\core\accessRules\users;
@@ -10,7 +11,6 @@ use phpbb\middleware\JwtAuthMiddleware;
 use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
 use phpbb\response;
-use phpbb\utils\jwtAuth;
 
 class authentications extends standardMethods
 {
@@ -59,34 +59,32 @@ class authentications extends standardMethods
             ]
         ]);
         $this->app->post('/authorize', [$this, 'postAuthorize']);
+        $this->app->get('/authorize/oauth', [$this, 'getAuthorizeOauth']);
     }
 
-    function postAuthorize(request $request, response $response, app $app)
+    public function postAuthorize(request $request, response $response, app $app)
     {
-        $authentication = $app->plugin('db')->collection('authentications')->findOne([
-            'type' => $request->body->raw('type'),
-            'identifier' => $request->body->raw('identifier'),
-        ]);
-
-        if (!$authentication) {
-            throw new BadRequest("Invalid authentiation details");
+        if (!$request->query('identifier')) {
+            throw new BadRequest(sprintf("Authentication identifier is required!"));
         }
-    
-        if (!$authentication->verify($request->body->raw('credential'))) {
-            throw new BadRequest("Invalid authentiation details");
+        $type = $request->body->raw('type') ?: $request->query('type');
+        $handler = factory::produce($type, [$request, $response, $app]);
+        if ($handler) {
+            return $handler->execute();
         }
+        throw new BadRequest(sprintf('Invalid type of %s', $request->query('type')));
+    }
 
-        $payload = [
-            'sub' => $authentication->owner,
-            'iss' => $request->http->host,
-            'exp' => time() + 86400,
-        ];
-        
-        $jwt = jwtAuth::getJwt($payload);
-        $response->send([
-            'expires' => $payload['exp'],
-            'remaining' => $payload['exp'] - time(),
-            'access_token' => $jwt,
-        ]);
+
+    public function getAuthorizeOauth(request $request, response $response, app $app)
+    {
+        if (!$request->query('identifier')) {
+            throw new BadRequest(sprintf("Authentication identifier is required!"));
+        }
+        $handler = factory::produce($request->query('type'), [$request, $response, $app]);
+        if ($handler) {
+            return $handler->execute();
+        }
+        throw new BadRequest(sprintf('Invalid type of %s', $request->query('type')));
     }
 }

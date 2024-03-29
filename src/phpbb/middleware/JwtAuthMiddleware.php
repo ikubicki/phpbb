@@ -19,7 +19,7 @@ class jwtAuthMiddleware
      */
     public function execute(request $request): request
     {
-        $authorization = $request->client->bearer();
+        $authorization = $request->client->bearer() ?: $request->cookie('phpbb.auth');
         $payload = jwtAuth::getPayload($authorization);
         if (!$payload || !$payload->sub) {
             throw new NotAuthorized($request);

@@ -8,6 +8,8 @@ services:
       - .:/var/www
       - ./htdocs:/var/www/html
       - /var/www/vendor
+    env_file:
+      - .env
     depends_on:
       - mongo
 

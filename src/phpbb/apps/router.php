@@ -2,10 +2,11 @@
 
 namespace phpbb\apps;
 
-
+use phpbb\apps\router\error;
+use phpbb\apps\router\route;
 use phpbb\response;
-use phpbb\core\event;
 use phpbb\errors\NotFound;
+use phpbb\request;
 
 class router
 {
@@ -16,42 +17,59 @@ class router
     const DELETE = 'DELETE';
     const OPTIONS = 'OPTIONS';
 
-    private event\bus $eventBus;
     static private array $table = [];
 
-    public function __construct()
-    {
-        $this->eventBus = new event\bus('router');
-    }
-
-    public function route(string $method, string $path, callable|array $callback, array $options)
+    /**
+     * Instantiates route definition
+     * 
+     * @author ikubicki
+     * @param string $method
+     * @param string $path
+     * @param callable|array $callback
+     * @param array $options
+     * @return route
+     */
+    public function route(string $method, string $path, callable|array $callback, array $options): route
     {
         return new router\defined($method, $path, $callback, $options);
     }
 
-    public function register(router\route $route)
+    /**
+     * Registers new route
+     * 
+     * @author ikubicki
+     * @param route $route
+     * @return router
+     */
+    public function register(route $route): router
     {
         if (empty(self::$table[$route->method])) {
             self::$table[$route->method] = [];
         }
         self::$table[$route->method][] = $route;
+        return $this;
     }
 
-    public function find($request)
+    /**
+     * Finds matching routes for given request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @return array
+     */
+    public function find(request $request): array
     {
-        $response = null;
+        $routes = [];
         foreach((self::$table[$request->method] ?? []) as $route) {
-            $params = $route->test($request->http->path);
-            if ($params !== false) {
-                $request->uri->import($params);
-                $response = new response($request, $route, $response);
+            $check = $route->test($request->http->path);
+            if ($check !== false) {
+                $request->uri->import($check);
+                $routes[] = $route;
             }
         }
-        if (!$response) {
-            $response = new response($request, new router\error(
-                new NotFound($request)
-            ));
+        if (!count($routes)) {
+            $routes[] = new error(new NotFound($request));
         }
-        return $response;
+        return $routes;
     }
 }
