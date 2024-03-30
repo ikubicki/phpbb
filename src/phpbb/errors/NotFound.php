@@ -7,6 +7,12 @@ use phpbb\response;
 
 class NotFound extends \LogicException
 {
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param request $request
+     */
     public function __construct(request $request)
     {
         parent::__construct(

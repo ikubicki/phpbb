@@ -1,24 +1,47 @@
 <?php
 
-namespace phpbb\middleware;
+namespace apps\auth\middleware;
 
 use phpbb\app;
+use phpbb\apps\middleware\abstraction;
 use phpbb\core\accessRules;
 use phpbb\request;
-use phpbb\errors\NotAuthorized;
 use phpbb\response;
-use phpbb\utils\jwtAuth;
+use phpbb\errors\NotAuthorized;
 
-class permissionsMiddleware
+/**
+ * Permissions check middleware
+ */
+class permissionsMiddleware extends abstraction
 {
 
+    /**
+     * @var array $permissions
+     */
     private array $permissions = [];
 
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param array $permissions
+     */
     public function __construct(array $permissions = [])
     {
         $this->permissions = $permissions;
     }
 
+    /**
+     * Executes permissions check
+     * Throws NotAuthorized when permissions check fails
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return request
+     * @throws NotAuthorized
+     */
     public function execute(request $request, response $response, app $app): request
     {
         if (!$request->context->raw('sub')) {

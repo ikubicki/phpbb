@@ -2,14 +2,14 @@
 
 namespace apps\auth\modules;
 
+use apps\auth\middleware\jwtAuthMiddleware;
+use apps\auth\middleware\permissionsMiddleware;
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
 use phpbb\core\accessRules\policies;
 use phpbb\core\accessRules\users as AccessRulesUsers;
 use phpbb\errors\NotAuthorized;
 use phpbb\errors\ResourceNotFound;
-use phpbb\middleware\JwtAuthMiddleware;
-use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
 use phpbb\response;
 
@@ -17,6 +17,12 @@ class users extends standardMethods
 {
     const COLLECTION = 'users';
 
+    /**
+     * Setups application routes
+     * 
+     * @author ikubicki
+     * @return void
+     */
     public function setup()
     {
         $this->app->get('/users', [$this, 'getRecords'], [
@@ -68,7 +74,18 @@ class users extends standardMethods
         ]);
     }
 
-    public function getMe(request $request, response $response, app $app)
+    /**
+     * Handles GET /me request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws NotAuthorized
+     * @throws ResourceNotFound
+     */
+    public function getMe(request $request, response $response, app $app): response
     {
         $auth = $request->context('auth');
         $subject = $auth->raw('sub');
@@ -82,7 +99,7 @@ class users extends standardMethods
         if (!$user) {
             throw new ResourceNotFound($request);
         }
-        $response->send([
+        return $response->send([
             'expires' => $auth->raw('exp', 0),
             'remaining' => $auth->raw('exp', 0) - time(),
             'user' => $user,

@@ -2,13 +2,13 @@
 
 namespace apps\auth\modules;
 
+use apps\auth\middleware\jwtAuthMiddleware;
+use apps\auth\middleware\permissionsMiddleware;
 use apps\auth\modules\authentications\factory;
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
 use phpbb\core\accessRules\users;
 use phpbb\errors\BadRequest;
-use phpbb\middleware\JwtAuthMiddleware;
-use phpbb\middleware\permissionsMiddleware;
 use phpbb\request;
 use phpbb\response;
 
@@ -16,11 +16,17 @@ class authentications extends standardMethods
 {
     const COLLECTION = 'authentications';
 
+    /**
+     * Setups application routes
+     * 
+     * @author ikubicki
+     * @return void
+     */
     public function setup()
     {
         $this->app->get('/' . self::COLLECTION, [$this, 'getRecords'], [
             'preExecution' => [
-                new JwtAuthMiddleware(),
+                new jwtAuthMiddleware(),
                 new permissionsMiddleware([
                     users::CREATE
                 ])
@@ -62,7 +68,17 @@ class authentications extends standardMethods
         $this->app->get('/authorize/oauth', [$this, 'getAuthorizeOauth']);
     }
 
-    public function postAuthorize(request $request, response $response, app $app)
+    /**
+     * Handles POST /authorize request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws BadRequest
+     */
+    public function postAuthorize(request $request, response $response, app $app): response
     {
         $identifier = $request->body->raw('identifier') ?: $request->query('identifier');
         $type = $request->body->raw('type') ?: $request->query('type');
@@ -74,7 +90,17 @@ class authentications extends standardMethods
     }
 
 
-    public function getAuthorizeOauth(request $request, response $response, app $app)
+    /**
+     * Handles GET /authorize/oauth request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws BadRequest
+     */
+    public function getAuthorizeOauth(request $request, response $response, app $app): response
     {
         $identifier = $request->body->raw('identifier') ?: $request->query('identifier');
         $handler = factory::produce($request->query('type'), [$request, $response, $app]);

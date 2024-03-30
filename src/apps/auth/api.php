@@ -3,14 +3,20 @@
 namespace apps\auth;
 
 use phpbb\app;
-use phpbb\middleware\JwtAuthMiddleware;
+use phpbb\config;
 use phpbb\request;
 use phpbb\response;
 
 class api extends app
 {
 
-    private function setupSchemas()
+    /**
+     * Registers application schemas into database handler
+     * 
+     * @author ikubicki
+     * @return void
+     */
+    private function setupSchemas(): void
     {
         $this->plugin('db')
             ->registerSchema(schemas\users::class)
@@ -18,7 +24,13 @@ class api extends app
             ->registerSchema(schemas\authentications::class);
     }
 
-    private function setupRoutes()
+    /**
+     * Setups application routes
+     * 
+     * @author ikubicki
+     * @return void
+     */
+    private function setupRoutes(): void
     {
         $this->get('/', [$this, 'getIndex']);
         (new modules\authentications($this))->setup();
@@ -27,13 +39,28 @@ class api extends app
         (new modules\users($this))->setup();
     }
 
-    protected function setup($config): void
+    /**
+     * Setups the application
+     * 
+     * @author ikubicki
+     * @param config $config
+     * @return void
+     */
+    protected function setup(config $config): void
     {
         $this->setupSchemas();
         $this->setupRoutes();
     }
 
-    public function getIndex(request $request, response $response)
+    /**
+     * Returns index page
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @return response
+     */
+    public function getIndex(request $request, response $response): response
     {
         return $response->file(__DIR__ . '/resources/index.html');
     }

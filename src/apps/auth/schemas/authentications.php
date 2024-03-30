@@ -6,8 +6,17 @@ use phpbb\db\collection\entity;
 use phpbb\db\collection\field;
 use phpbb\utils\hmac;
 
+/**
+ * Authentications collection entity
+ */
 class authentications extends entity
 {
+
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     */
     public function __construct()
     {
         $this
@@ -21,7 +30,14 @@ class authentications extends entity
             ->hide(['signature', 'kid']);
     }
 
-    public function verify(string $credential)
+    /**
+     * Verifies credential
+     * 
+     * @author ikubicki
+     * @param string $credential
+     * @return bool
+     */
+    public function verify(string $credential): bool
     {
         return hmac::hash($credential, $this->kid) == $this->signature;
     }

@@ -2,16 +2,22 @@
 
 namespace apps\auth\modules;
 
+use apps\auth\middleware\jwtAuthMiddleware;
+use apps\auth\middleware\permissionsMiddleware;
 use phpbb\apps\api\standardMethods;
 use phpbb\core\accessRules\organisations as AccessRulesOrganisations;
-use phpbb\middleware\jwtAuthMiddleware;
-use phpbb\middleware\permissionsMiddleware;
 
 class organisations extends standardMethods
 {
 
     const COLLECTION = 'organisations';
 
+    /**
+     * Setups application routes
+     * 
+     * @author ikubicki
+     * @return void
+     */
     public function setup()
     {
         $this->app->get('/organisations', [$this, 'getRecords'], [

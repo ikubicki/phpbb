@@ -62,7 +62,7 @@ class router
         $routes = [];
         foreach((self::$table[$request->method] ?? []) as $route) {
             $check = $route->test($request->http->path);
-            if ($check !== false) {
+            if ($check !== null) {
                 $request->uri->import($check);
                 $routes[] = $route;
             }

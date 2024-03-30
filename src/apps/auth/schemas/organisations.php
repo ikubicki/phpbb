@@ -5,8 +5,17 @@ namespace apps\auth\schemas;
 use phpbb\db\collection\entity;
 use phpbb\db\collection\field;
 
+/**
+ * Organisations collection entity
+ */
 class organisations extends entity
 {
+
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     */
     public function __construct()
     {
         $this
@@ -23,8 +32,17 @@ class organisations extends entity
             ->reference('creator', users::class, 'uuid');
     }
 
-    public function metadata($field, $value)
+    /**
+     * Sets metadata field value
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param mixed $value
+     * @return organisations
+     */
+    public function metadata(string $field, mixed $value): organisations
     {
         $this->metadata->$field = $value;
+        return $this;
     }
 }

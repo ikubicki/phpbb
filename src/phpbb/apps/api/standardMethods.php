@@ -15,16 +15,40 @@ abstract class standardMethods
 
     const COLLECTION = 'undefined';
 
+    /**
+     * @var app $app
+     */
     protected app $app;
 
-    public function __construct(app $app = null)
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param ?app $app
+     */
+    public function __construct(?app $app)
     {
         $this->app = $app;
     }
 
+    /**
+     * Setups application routes
+     * 
+     * @author ikubicki
+     * @return void
+     */
     abstract public function setup();
 
-    public function getRecords(request $request, response $response, app $app)
+    /**
+     * Handlers GET /{resource} request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     */
+    public function getRecords(request $request, response $response, app $app): response
     {
         $filters = [];
         if ($request->query('uuid')) {
@@ -40,7 +64,17 @@ abstract class standardMethods
         return $response->status($response::OK)->send($records);
     }
 
-    public function createRecord(request $request, response $response, app $app)
+    /**
+     * Handlers POST /{resource} request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws BadRequest
+     */
+    public function createRecord(request $request, response $response, app $app): response
     {
         try {
             $record = $app->plugin('db')->collection(static::COLLECTION)->create();
@@ -56,7 +90,17 @@ abstract class standardMethods
         return $response->status($response::OK)->send($record);
     }
 
-    public function getRecord(request $request, response $response, app $app)
+    /**
+     * Handlers GET /{resource}/:id request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws ResourceNotFound
+     */
+    public function getRecord(request $request, response $response, app $app): response
     {
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);
@@ -77,7 +121,17 @@ abstract class standardMethods
         return $response->status($response::OK)->send($data);
     }
 
-    public function patchRecord(request $request, response $response, app $app)
+    /**
+     * Handlers PATCH /{resource}/:id request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws ResourceNotFound
+     */
+    public function patchRecord(request $request, response $response, app $app): response
     {
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);
@@ -93,7 +147,17 @@ abstract class standardMethods
         return $response->status($response::OK)->send($record);
     }
 
-    public function deleteRecord(request $request, response $response, app $app)
+    /**
+     * Handlers DELETE /{resource}/:id request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws ResourceNotFound
+     */
+    public function deleteRecord(request $request, response $response, app $app): response
     {
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);

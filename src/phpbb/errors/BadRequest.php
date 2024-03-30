@@ -6,7 +6,14 @@ use phpbb\response;
 
 class BadRequest extends \LogicException
 {
-    public function __construct($message, $code = response::BAD_REQUEST)
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     * @param string $message
+     * @param int $code
+     */
+    public function __construct(string $message, int $code = response::BAD_REQUEST)
     {
         parent::__construct($message, $code);
     }

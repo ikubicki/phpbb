@@ -6,8 +6,17 @@ use phpbb\db\collection\entity;
 use phpbb\db\collection\field;
 use stdClass;
 
+/**
+ * Users collection entity
+ */
 class users extends entity
 {
+
+    /**
+     * The constructor
+     * 
+     * @author ikubicki
+     */
     public function __construct()
     {
         $this
@@ -20,15 +29,32 @@ class users extends entity
             ->index('uuid', field::INDEX_PRIMARY);
     }
 
-    public function metadata($field, $value)
+    /**
+     * Sets metadata field value
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param mixed $value
+     * @return users
+     */
+    public function metadata(string $field, mixed $value): users
     {
         $this->metadata->$field = $value;
+        return $this;
     }
 
-    public function avatar($url)
+    /**
+     * Sets avatar URL
+     * 
+     * @author ikubicki
+     * @param string $url
+     * @return users
+     */
+    public function avatar(string $url): users
     {
         $this->metadata('avatar', (object) [
             'url' => $url
         ]);
+        return $this;
     }
 }

@@ -101,20 +101,17 @@ class response
      */
     public function execute(app $app): response
     {
+        $previous = null;
         try {
             $this->preExecution($app);
             $previous = $this->previous ? $this->previous->execute($app) : null;
             if (!$this->sent) {
-                call_user_func_array($this->route->callback, [
-                    $this->request, $this, $app, $previous
-                ]);
+                $this->route->execute($this->request, $this, $app, $previous);
             }
             $this->postExecution($app);
         }
         catch(Throwable $throwable) {
-            call_user_func_array((new error($throwable))->callback, [
-                $this->request, $this, $app, null
-            ]);
+            (new error($throwable))->execute($this->request, $this, $app, $previous);
         }
         return $this;
     }
