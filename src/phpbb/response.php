@@ -4,6 +4,7 @@ namespace phpbb;
 
 use phpbb\apps\router\error;
 use phpbb\apps\router\route;
+use phpbb\errors\ServerError;
 use Throwable;
 
 class response
@@ -159,6 +160,25 @@ class response
                 call_user_func_array([$middleware, 'execute'], [$this->request, $this, $app]);
             }
         }
+    }
+
+    /**
+     * Loads a file into response body and sets the content type
+     * 
+     * @author ikubicki
+     * @param string $filename
+     * @param string $type
+     * @return response
+     */
+    public function file(string $filename, string $type = null): response
+    {
+        if (!file_exists($filename)) {
+            throw new ServerError(sprintf('File doesn\'t exists: %s', basename($filename)));
+        }
+        if (!$type) {
+            $type = mime_content_type($filename);
+        }
+        return $this->type($type)->send(file_get_contents($filename));
     }
 
     /**

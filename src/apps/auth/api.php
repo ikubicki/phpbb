@@ -4,6 +4,8 @@ namespace apps\auth;
 
 use phpbb\app;
 use phpbb\middleware\JwtAuthMiddleware;
+use phpbb\request;
+use phpbb\response;
 
 class api extends app
 {
@@ -18,6 +20,7 @@ class api extends app
 
     private function setupRoutes()
     {
+        $this->get('/', [$this, 'getIndex']);
         (new modules\authentications($this))->setup();
         (new modules\organisations($this))->setup();
         (new modules\permissions($this))->setup();
@@ -28,5 +31,10 @@ class api extends app
     {
         $this->setupSchemas();
         $this->setupRoutes();
+    }
+
+    public function getIndex(request $request, response $response)
+    {
+        return $response->file(__DIR__ . '/resources/index.html');
     }
 }
