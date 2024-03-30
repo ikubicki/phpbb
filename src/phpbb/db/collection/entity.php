@@ -6,6 +6,7 @@ use JsonSerializable;
 use phpbb\db;
 use phpbb\db\collection;
 use phpbb\db\collection\field\enum;
+use phpbb\db\errors\ValidationError;
 
 /**
  * Entity class
@@ -17,16 +18,21 @@ class entity implements JsonSerializable
     const DELETED = 0;
     const MODIFIED = 1;
     const CURRENT = 2;
-
-    /**
-     * @var collection $collection
-     */
-    private collection $collection;
     
     /**
      * @var array $data
      */
     private array $data = [];
+
+    /**
+     * @var collection $collection
+     */
+    private collection $collection;
+
+    /**
+     * @var db $db
+     */
+    protected db $db;
 
     /**
      * @var array $fields
@@ -42,6 +48,11 @@ class entity implements JsonSerializable
      * @var array $indexes
      */
     protected array $indexes = [];
+
+    /**
+     * @var array $validators
+     */
+    protected array $validators = [];
 
     /**
      * @var array $hide
@@ -68,6 +79,7 @@ class entity implements JsonSerializable
     public function collection(collection $collection): void
     {
         $this->collection = $collection;
+        $this->db = $collection->db;
     }
 
     /**
@@ -94,6 +106,9 @@ class entity implements JsonSerializable
      */
     public function __set(string $field, mixed $value)
     {
+        if ($this->validators[$field] ?? false) {
+            $this->validateField($field, $this->validators[$field], $value);
+        }
         // schema defined entity
         if (count($this->fields) && isset($this->fields[$field])) {
             $this->data[$field] = $this->fields[$field]->process($value);
@@ -284,6 +299,20 @@ class entity implements JsonSerializable
     }
 
     /**
+     * Adds field validation definition
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param string $type
+     * @return static
+     */
+    protected function validate(string $field, string $type, mixed $value): static
+    {
+        $this->validators[$field][$type] = $value;
+        return $this;
+    }
+
+    /**
      * Sets entity status
      * Returns calculated status
      * 
@@ -397,5 +426,21 @@ class entity implements JsonSerializable
             },
             ARRAY_FILTER_USE_KEY
         );
+    }
+
+    protected function validateField(string $field, array $validators, mixed $value): void
+    {
+        foreach($validators as $validator => $expected)
+        {
+            switch($validator) {
+                case field::VALIDATE_LENGTH:
+                    if (strlen(trim($value)) < $expected) {
+                        throw new ValidationError(
+                            sprintf(ValidationError::LENGTH, $field, $expected)
+                        );
+                    }
+                    break;
+            }
+        }
     }
 }

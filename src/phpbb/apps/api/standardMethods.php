@@ -40,7 +40,7 @@ abstract class standardMethods
     abstract public function setup();
 
     /**
-     * Handlers GET /{resource} request
+     * Handles GET /{resource} request
      * 
      * @author ikubicki
      * @param request $request
@@ -65,7 +65,7 @@ abstract class standardMethods
     }
 
     /**
-     * Handlers POST /{resource} request
+     * Handles POST /{resource} request
      * 
      * @author ikubicki
      * @param request $request
@@ -81,8 +81,10 @@ abstract class standardMethods
             $record->setMany($request->body->toArray());
             $record->save();
         }
-        catch(DuplicateError) {
-            throw new BadRequest("Name is already taken");
+        catch(DuplicateError $error) {
+            throw new BadRequest(sprintf(
+                BadRequest::FIELDS_VALUES_TAKEN, join(',', $error->fields)
+            ));
         }
         catch(FieldError $error) {
             throw new BadRequest($error->error);
@@ -91,7 +93,7 @@ abstract class standardMethods
     }
 
     /**
-     * Handlers GET /{resource}/:id request
+     * Handles GET /{resource}/:id request
      * 
      * @author ikubicki
      * @param request $request
@@ -122,7 +124,7 @@ abstract class standardMethods
     }
 
     /**
-     * Handlers PATCH /{resource}/:id request
+     * Handles PATCH /{resource}/:id request
      * 
      * @author ikubicki
      * @param request $request
@@ -148,7 +150,7 @@ abstract class standardMethods
     }
 
     /**
-     * Handlers DELETE /{resource}/:id request
+     * Handles DELETE /{resource}/:id request
      * 
      * @author ikubicki
      * @param request $request

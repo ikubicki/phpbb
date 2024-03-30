@@ -63,10 +63,12 @@ abstract class abstraction
      */
     protected function getAuthentication(string $type, string $identifier): ?authentications
     {
-        $authentication = $this->app->plugin('db')->collection('authentications')->findOne([
-            'type' => $type,
-            'identifier' => $identifier,
-        ]);
+        $authentication = $this->app->plugin('db')
+            ->collection('authentications')
+            ->findOne([
+                'type' => $type,
+                'identifier' => $identifier,
+            ]);
         if (!$authentication) {
             throw new BadRequest("Invalid authentication details");
         }

@@ -34,6 +34,8 @@ class field
     const ON_UPDATE = 3;
     const ON_DELETE = 4;
 
+    const VALIDATE_LENGTH = 1;
+
     /**
      * @var string $name
      */

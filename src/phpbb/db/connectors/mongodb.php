@@ -105,7 +105,7 @@ class mongodb extends abstraction
         if (count($result->writeErrors ?? [])) {
             $error = $result->writeErrors[0];
             if ($error->code === 11000) {
-                throw new DuplicateError($error->errmsg);
+                throw new DuplicateError($error->errmsg, array_keys((array) $error->keyPattern));
             }
             throw new DatabaseError($error->errmsg);
         }
@@ -236,7 +236,7 @@ class mongodb extends abstraction
     {
         return new Command([
             'insert' => $query->collection,
-            'documents' => array_map([$this, 'convertValues'], $collections),
+            'documents' => $collections,
         ]);
     }
 
@@ -255,7 +255,7 @@ class mongodb extends abstraction
             'updates' => [[
                 'q' => $this->convertValues($query->filters),
                 'u' => [
-                    '$set' => $this->convertValues($values),
+                    '$set' => $values,
                 ],
                 'multi' => ($query->options[$query::LIMIT] ?? 0) != 1,
                 'upsert' => ($query->options[$query::INSERT] ?? false),

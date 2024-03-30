@@ -6,6 +6,9 @@ use phpbb\response;
 
 class BadRequest extends \LogicException
 {
+
+    const FIELDS_VALUES_TAKEN = 'Values for fields [%s] are already taken';
+    
     /**
      * The constructor
      * 
