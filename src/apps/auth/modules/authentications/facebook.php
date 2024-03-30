@@ -13,12 +13,15 @@ class facebook extends abstraction
      * Executes facebook authentication
      * 
      * @author ikubicki
+     * @param string $identifier
      * @return response
      * @throws BadRequest
      */
-    public function execute(): response
+    public function execute(string $identifier): response
     {
-        $identifier = $this->request->query('identifier');
+        if (!$identifier) {
+            throw new BadRequest(sprintf("Authentication identifier is required!"));
+        }
         $authentication = $this->getAuthentication('facebook', $identifier);
 
         $redirectionUrl = $this->app->url(

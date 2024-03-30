@@ -76,8 +76,8 @@ class jwtAuth
     /**
      * Returns a payload from a given token
      * 
-     * @author ikubciki
-     * @param ?string $roken
+     * @author ikubicki
+     * @param ?string $token
      * @return ?stdClass
      */
     public static function getPayload(?string $token): ?stdClass

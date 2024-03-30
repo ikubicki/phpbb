@@ -17,7 +17,7 @@ abstract class app
     /**
      * @var config\abstraction $config
      */
-    private config\abstraction $config;
+    public config\abstraction $config;
 
     /**
      * @var router $router
@@ -139,7 +139,7 @@ abstract class app
         $routes = $this->router->find($request);
         $response = null;
         foreach($routes as $route) {
-            $response = new response($request, $route, $response);
+            $response = new response($this, $request, $route, $response);
         }
         $this->request = $request;
         return $response->execute($this);
@@ -187,7 +187,7 @@ abstract class app
         if (count($query)) {
             $uri .= (strpos($uri, '?') ? '&' : '?') . http_build_query($query);
         }
-        return $this->request->http->base . '/' . ltrim($uri, '/');
+        return $this->request->url . '/' . ltrim($uri, '/');
     }
 
     /**

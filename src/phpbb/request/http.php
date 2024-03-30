@@ -61,18 +61,5 @@ class http
             stripos($_SERVER['HTTPS'] ?? '', 'On') === 0;
         $this->referer = $_SERVER['HTTP_REFERER'] ?? null;
         $this->query = $_SERVER['QUERY_STRING'] ?? '';
-
-        $this->base = $this->getUrl($_SERVER['SCRIPT_NAME']);
-        if ($_SERVER['PATH_INFO'] ?? false) {
-            $uri = $_SERVER['REQUEST_URI'];
-            $this->base = $this->getUrl(substr($uri, 0, strpos($uri, $_SERVER['PATH_INFO'])));
-        }
-    }
-
-    public function getUrl(string $path = ''): string
-    {
-        $protocol = $_SERVER['REQUEST_SCHEME'];
-        $host = $_SERVER['HTTP_HOST'];
-        return sprintf('%s://%s%s', $protocol, $host, $path);
     }
 }

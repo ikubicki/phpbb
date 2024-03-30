@@ -32,9 +32,10 @@ abstract class abstraction
      * 
      * @abstract
      * @author ikubicki
+     * @param string $identifier
      * @return response
      */
-    abstract public function execute(): response;
+    abstract public function execute(string $identifier): response;
 
     /**
      * The constructor
@@ -82,15 +83,18 @@ abstract class abstraction
     protected function getAccessToken(authentications $authentication): response
     {
         $payload = [
+            'tok' => 'access',
             'sub' => $authentication->owner,
             'iss' => $this->request->http->host,
             'exp' => time() + 86400,
+            'scope' => 'phpbb'
         ];
         
         $jwt = jwtAuth::getJwt($payload);
-        $this->response->cookie('phpbb.auth', $jwt, [
-            'path' => '/'
-        ]);
+        $cookieName = $this->app->config->get('cookie')->raw('name');
+        if ($cookieName) {
+            $this->response->cookie($cookieName, $jwt);
+        }
         return $this->response->send([
             'expires' => $payload['exp'],
             'remaining' => $payload['exp'] - time(),

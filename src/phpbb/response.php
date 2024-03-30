@@ -19,6 +19,11 @@ class response
     const SERVER_ERROR = 500;
 
     /**
+     * @var app $app
+     */
+    private app $app;
+
+    /**
      * @var request $request
      */
     public request $request;
@@ -67,12 +72,14 @@ class response
      * The constructor
      * 
      * @author ikubicki
+     * @param app $app
      * @param request $request
      * @param route $route
      * @param ?response $previous
      */
-    public function __construct(request $request, route $route, ?response $previous = null)
+    public function __construct(app $app, request $request, route $route, ?response $previous = null)
     {
+        $this->app = $app;
         $this->request = $request;
         $this->route = $route;
         $this->previous = $previous;
@@ -239,14 +246,24 @@ class response
      */
     public function cookie(string $name, string $value, array $options = []): response
     {
+        $cookieOptions = $this->app->config
+            ->get('cookie')
+            ->get('options');
+
+        if (!array_key_exists('domain', $options)) {
+            $options['domain'] = $cookieOptions->raw('domain', $this->request->url->hostname);
+        }
+        if (!array_key_exists('path', $options)) {
+            $options['path'] = $cookieOptions->raw('path', $this->request->url->path);
+        }
         if (!array_key_exists('secure', $options)) {
-            $options['secure'] = $this->request->http->ssl;
+            $options['secure'] = $cookieOptions->raw('secure', $this->request->http->ssl);
         }
         if (!array_key_exists('httponly', $options)) {
-            $options['httponly'] = `true`;
+            $options['httponly'] = $cookieOptions->raw('httponly', true);
         }
         if (!array_key_exists('samesite', $options)) {
-            $options['samesite'] = `true`;
+            $options['samesite'] = $cookieOptions->raw('samesite', true);
         }
         $this->cookies[$name] = [
             'value' => $value,

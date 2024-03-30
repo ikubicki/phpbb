@@ -4,6 +4,7 @@ namespace phpbb;
 
 use phpbb\request\context;
 use phpbb\request\uri;
+use phpbb\request\url;
 use stdClass;
 
 class request
@@ -58,6 +59,10 @@ class request
      * @var uri $uri
      */
     public uri $uri;
+    /**
+     * @var url $url
+     */
+    public url $url;
 
     /**
      * @var context $context
@@ -83,6 +88,26 @@ class request
         $this->body = new request\body($this);
         $this->context = new context(new stdClass());
         $this->uri = new uri();
+
+        $this->url = $this->getUrl($_SERVER['SCRIPT_NAME']);
+        if ($_SERVER['PATH_INFO'] ?? false) {
+            $uri = $_SERVER['REQUEST_URI'];
+            $this->url = $this->getUrl(substr($uri, 0, strpos($uri, $_SERVER['PATH_INFO'])));
+        }
+    }
+
+    /**
+     * Builds a URL container
+     * 
+     * @author ikubicki
+     * @param string $path
+     * @return url
+     */
+    public function getUrl(string $path = ''): url
+    {
+        $protocol = $_SERVER['REQUEST_SCHEME'] ?? 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        return new url(sprintf('%s://%s', $protocol, $host), $path, $this->http->host);
     }
 
     /**

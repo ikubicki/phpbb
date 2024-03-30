@@ -12,12 +12,15 @@ class password extends abstraction
      * Executes password authentication
      * 
      * @author ikubicki
+     * @param string $identifier
      * @return response
      * @throws BadRequest
      */
-    public function execute(): response
+    public function execute(string $identifier): response
     {
-        $identifier = $this->request->body->raw('identifier') ?: $this->request->query('identifier');
+        if (!$identifier) {
+            throw new BadRequest(sprintf("Authentication identifier is required!"));
+        }
         $credential = $this->request->body->raw('credential');
         $authentication = $this->getAuthentication('password', $identifier);
     
