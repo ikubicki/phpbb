@@ -71,9 +71,12 @@ Before creating Merge Request, run Postman collection from `tests/` directory, t
 
 Over last many years, I wanted to modernise **phpBB** and **phpBB by Przemo**, unfortunately the code is not very friendly. It still remembers php4 and any (failed) attempts to refactor the code took long time. Instead, is easier to build everything from scratch (yeah, I know how it sounds).
 
-* Completing the Identity service - *end of March 2024*
-* Completing the phpBB service - *end of April 2024*
+* Completing the Identity service - *end of April 2024*
+* Completing the phpBB service - *end of June 2024*
 * Building first version of the frontend - *end of August 2024*
+* Building storage service - *end of September 2024*
+* Building notifications service - *end of October 2024*
+* Completing the alpha release - *end of 2024*
 
 More to be defined later.
 

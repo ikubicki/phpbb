@@ -80,11 +80,12 @@ class authentications extends standardMethods
      */
     public function postAuthorize(request $request, response $response, app $app): response
     {
+        $scope = $request->body->raw('scope') ?: $request->query('scope');
         $identifier = $request->body->raw('identifier') ?: $request->query('identifier');
         $type = $request->body->raw('type') ?: $request->query('type');
         $handler = factory::produce($type, [$request, $response, $app]);
         if ($handler) {
-            return $handler->execute($identifier);
+            return $handler->execute($identifier, $scope);
         }
         throw new BadRequest(sprintf('Invalid type of %s', $request->query('type')));
     }
@@ -102,10 +103,11 @@ class authentications extends standardMethods
      */
     public function getAuthorizeOauth(request $request, response $response, app $app): response
     {
+        $scope = $request->body->raw('scope') ?: $request->query('scope');
         $identifier = $request->body->raw('identifier') ?: $request->query('identifier');
         $handler = factory::produce($request->query('type'), [$request, $response, $app]);
         if ($handler) {
-            return $handler->execute($identifier);
+            return $handler->execute($identifier, $scope);
         }
         throw new BadRequest(sprintf('Invalid type of %s', $request->query('type')));
     }

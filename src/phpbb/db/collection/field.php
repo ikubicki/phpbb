@@ -5,6 +5,7 @@ namespace phpbb\db\collection;
 use DateTime;
 use DateTimeInterface;
 use phpbb\db\collection\field\enum;
+use phpbb\db\collection\field\selection;
 use phpbb\db\errors\FieldError;
 use Ramsey\Uuid\Uuid;
 
@@ -42,9 +43,9 @@ class field
     private string $name;
 
     /**
-     * @var string|enum $type
+     * @var string|enum|selection $type
      */
-    private string|enum $type;
+    private string|enum|selection $type;
 
     /**
      * @var mixed $default
@@ -57,9 +58,9 @@ class field
     private bool $writable = true;
 
     /**
-     * @var ?int $behaviour
+     * @var ?int $behavior
      */
-    private ?int $behaviour = null;
+    private ?int $behavior = null;
 
     /**
      * The constructor
@@ -70,22 +71,22 @@ class field
      * @param mixed $default
      * @param string|object type
      * @param bool $writable
-     * @param int $behaviour
+     * @param int $behavior
      */
     public function __construct(
         string $name, 
         mixed $default, 
-        string|enum $type = self::TYPE_STRING, 
+        string|enum|selection $type = self::TYPE_STRING, 
         bool $writable = true,
-        int $behaviour = null
+        int $behavior = null
     )
     {
         $this->name = $name;
         $this->default = $default;
         $this->type = $type;
         $this->writable = $writable;
-        $this->behaviour = $behaviour;
-        if ($behaviour == self::ON_CREATE) {
+        $this->behavior = $behavior;
+        if ($behavior == self::ON_CREATE) {
             $this->default = $this->calculateValue();
         }
     }
@@ -101,6 +102,19 @@ class field
     public static function enum(array $options, ?string $default = null): enum
     {
         return new enum($options, $default);
+    }
+
+    /**
+     * Returns new selection instance
+     * 
+     * @author ikubicki
+     * @param array $options
+     * @param ?string $default
+     * @return selection
+     */
+    public static function selection(array $options, ?string $default = null): selection
+    {
+        return new selection($options, $default);
     }
 
     /**
@@ -136,6 +150,9 @@ class field
     public function process(mixed $value = false): mixed
     {
         if ($this->type instanceof enum) {
+            return $this->type->process($value);
+        }
+        if ($this->type instanceof selection) {
             return $this->type->process($value);
         }
         if ($value === false) {

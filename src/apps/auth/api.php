@@ -19,9 +19,11 @@ class api extends app
     private function setupSchemas(): void
     {
         $this->plugin('db')
-            ->registerSchema(schemas\users::class)
+            ->registerSchema(schemas\authentications::class)
+            ->registerSchema(schemas\memberships::class)
             ->registerSchema(schemas\organisations::class)
-            ->registerSchema(schemas\authentications::class);
+            ->registerSchema(schemas\policies::class)
+            ->registerSchema(schemas\users::class);
     }
 
     /**

@@ -14,15 +14,20 @@ class facebook extends abstraction
      * 
      * @author ikubicki
      * @param string $identifier
+     * @param string $scope
      * @return response
      * @throws BadRequest
      */
-    public function execute(string $identifier): response
+    public function execute(string $identifier, string $scope): response
     {
         if (!$identifier) {
-            throw new BadRequest(sprintf("Authentication identifier is required!"));
+            throw new BadRequest("Authentication identifier is required!");
+        }
+        if (!$scope) {
+            throw new BadRequest("Scope is required!");
         }
         $authentication = $this->getAuthentication('facebook', $identifier);
+        $authentication->checkScope($scope);
 
         $redirectionUrl = $this->app->url(
             'authorize/oauth?type=facebook&identifier=' . $this->request->query('identifier')
@@ -46,7 +51,7 @@ class facebook extends abstraction
             throw new BadRequest("Facebook user not found!");
         }
 
-        return $this->getAccessToken($authentication);
+        return $this->getAccessToken($authentication, $scope);
     }
 
     /**

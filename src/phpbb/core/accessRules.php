@@ -5,11 +5,17 @@ namespace phpbb\core;
 use JsonSerializable;
 use phpbb\app;
 use phpbb\core\accessRules\resource;
+use phpbb\db\collection\entity;
 use phpbb\db\connectors\records;
 
 class accessRules implements JsonSerializable
 {
     
+    const CREATE = 'create';
+    const VIEW = 'view';
+    const EDIT = 'edit';
+    const DELETE = 'delete';
+
     /**
      * @var array $resources
      */
@@ -27,48 +33,46 @@ class accessRules implements JsonSerializable
     }
     
     /**
-     * Adds multiple access rule definitions
+     * Adds multiple access policies definitions
      *
      * @author ikubicki
-     * @param records $rules
+     * @param records $policies
      * @return accessRules
      */
-    public function addMany(records $rules): accessRules
+    public function addMany(records $policies): accessRules
     {
-        foreach($rules as $rule) {
-            $this->add($rule);
+        foreach($policies as $policy) {
+            $this->add($policy);
         }
         return $this;
     }
     
     /**
-     * Adds a single access rule definition
-     *
-     * @author ikubicki
-     * @param object $rule
-     * @return accessRules
-     */
-    public function add(object $rule): accessRules
-    {
-        if (count($rule->policies ?? [])) {
-            foreach($rule->policies as $policy) {
-                $this->addPolicy($policy);
-            }
-        }
-        return $this;
-    }
-    
-    /**
-     * Adds access rule policy to a resource
+     * Adds a single access policy definition
      *
      * @author ikubicki
      * @param object $policy
      * @return accessRules
      */
-    public function addPolicy(object $policy): accessRules
+    public function add(object $policy): accessRules
     {
-        $resources = $this->extractResources($policy);
-        $access = (array) $policy->access;
+        foreach($policy->rules ?? [] as $rule) {
+            $this->addRule($rule);
+        }
+        return $this;
+    }
+    
+    /**
+     * Adds access rule for a resource
+     *
+     * @author ikubicki
+     * @param object $rule
+     * @return accessRules
+     */
+    public function addRule(object $rule): accessRules
+    {
+        $resources = $this->extractResources($rule);
+        $access = (array) $rule->access;
         foreach($resources as $resource) {
             list($resource, $id) = explode(':', $resource);
             if (empty($this->resources[$resource])) {
@@ -92,16 +96,16 @@ class accessRules implements JsonSerializable
     }
     
     /**
-     * Transforms policy resources
+     * Transforms rule resources
      *
      * @author ikubicki
-     * @param object $policy
+     * @param object $rule
      * @return array
      */
-    private function extractResources(object $policy): array
+    private function extractResources(object $rule): array
     {
         $resources = [];
-        foreach(($policy->resources ?? (array) $policy->resource ?? []) as $i => $resource) {
+        foreach(($rule->resources ?? (array) $rule->resource ?? []) as $resource) {
             if ($resource == resource::ANY) {
                 $resource = resource::ANY . ':' . resource::ANY;
             }
@@ -181,7 +185,7 @@ class accessRules implements JsonSerializable
      * @param array $uuids
      * @return array
      */
-    public function getRules(array $resourceIds): array
+    public function getAccessRules(array $resourceIds): array
     {
         $results = [];
         foreach ($resourceIds as $resourceId) {
@@ -210,7 +214,81 @@ class accessRules implements JsonSerializable
      */
     public function has(string $resourceId, string $rule): bool
     {
-        $rules = $this->getRules([$resourceId]);
+        $rules = $this->getAccessRules([$resourceId]);
         return in_array($rule, $rules[$resourceId]);
+    }
+
+    /**
+     * Checks permissions 
+     * 
+     * @author ikubicki
+     * @param string $action
+     * @param string|object $resource
+     * @param ?string $uuid
+     * @return bool
+     */
+    public function can(string $action, string|object $resource, ?string $uuid): bool
+    {
+        if ($resource instanceof entity) {
+            $uuid = $resource->uuid;
+            $resource = $resource->collection->name;
+        }
+        if (!$uuid) {
+            return false;
+        }
+        return $this->has("$resource:$uuid", "$resource.$action");
+    }
+
+    /**
+     * Checks create permissions
+     * 
+     * @author ikubicki
+     * @param string|object $resource
+     * @param ?string $uuid
+     * @return bool
+     */
+    public function canCreate(string|object $resource, ?string $uuid): bool
+    {
+        return $this->can(self::CREATE, $resource, $uuid);
+    }
+
+    /**
+     * Checks read permissions
+     * 
+     * @author ikubicki
+     * @param string|object $resource
+     * @param ?string $uuid
+     * @return bool
+     */
+    public function canView(string|object $resource, ?string $uuid): bool
+    {
+        return $this->can(self::VIEW, $resource, $uuid);
+    }
+
+    /**
+     * Checks update permissions
+     * 
+     * @author ikubicki
+     * @param string|object $resource
+     * @param ?string $uuid
+     * @return bool
+     */
+    public function canEdit(string|object $resource, ?string $uuid): bool
+    {
+        return $this->can(self::EDIT, $resource, $uuid);
+    }
+
+
+    /**
+     * Checks delete permissions
+     * 
+     * @author ikubicki
+     * @param string|object $resource
+     * @param ?string $uuid
+     * @return bool
+     */
+    public function canDelete(string|object $resource, ?string $uuid): bool
+    {
+        return $this->can(self::DELETE, $resource, $uuid);
     }
 }

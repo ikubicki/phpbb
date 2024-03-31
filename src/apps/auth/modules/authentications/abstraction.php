@@ -33,9 +33,10 @@ abstract class abstraction
      * @abstract
      * @author ikubicki
      * @param string $identifier
+     * @param string $scope
      * @return response
      */
-    abstract public function execute(string $identifier): response;
+    abstract public function execute(string $identifier, string $scope): response;
 
     /**
      * The constructor
@@ -80,16 +81,17 @@ abstract class abstraction
      * 
      * @author ikubicki
      * @param authentications $authentication
+     * @param string $scope
      * @return response
      */
-    protected function getAccessToken(authentications $authentication): response
+    protected function getAccessToken(authentications $authentication, string $scope): response
     {
         $payload = [
             'tok' => 'access',
             'sub' => $authentication->owner,
-            'iss' => $this->request->http->host,
+            'iss' => (string) $this->request->url,
             'exp' => time() + 86400,
-            'scope' => 'phpbb'
+            'scope' => $scope,
         ];
         
         $jwt = jwtAuth::getJwt($payload);

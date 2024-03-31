@@ -6,6 +6,7 @@ use JsonSerializable;
 use phpbb\db;
 use phpbb\db\collection;
 use phpbb\db\collection\field\enum;
+use phpbb\db\collection\field\selection;
 use phpbb\db\errors\ValidationError;
 
 /**
@@ -27,7 +28,7 @@ class entity implements JsonSerializable
     /**
      * @var collection $collection
      */
-    private collection $collection;
+    public collection $collection;
 
     /**
      * @var db $db
@@ -203,28 +204,28 @@ class entity implements JsonSerializable
     }
 
     /**
-     * Adds field definiton
+     * Adds field definition
      * 
      * @author ikubicki
      * @param string $name
      * @param mixed $default
-     * @param string|enum $type
+     * @param string|enum|selection $type
      * @param bool $writable
-     * @param int $behaviour
+     * @param int $behavior
      * @return static
      */
     protected function field(
         string $name, 
         mixed $default = null, 
-        string|enum $type = field::TYPE_STRING, 
+        string|enum|selection $type = field::TYPE_STRING, 
         bool $writable = true,
-        int $behaviour = null,
+        int $behavior = null,
     ): static
     {
-        $this->fields[$name] = new field($name, $default, $type, $writable, $behaviour);
+        $this->fields[$name] = new field($name, $default, $type, $writable, $behavior);
         $this->data[$name] = $this->fields[$name]->default();
-        if ($behaviour) {
-            $this->hooks[$behaviour][$name] = $this->fields[$name];
+        if ($behavior) {
+            $this->hooks[$behavior][$name] = $this->fields[$name];
         }
         return $this;
     }
@@ -265,8 +266,11 @@ class entity implements JsonSerializable
      */
     public function getReferencedEntity(string $field): ?entity
     {
-        if (isset($this->references[$field])) {
+        if (empty($this->references[$field])) {
             return null;
+        }
+        if (!$this->__get($field)) {
+            return $this->__get($field);
         }
         return $this->references[$field]->getEntity($this);
     }

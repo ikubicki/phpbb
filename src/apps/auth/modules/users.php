@@ -7,6 +7,7 @@ use apps\auth\middleware\permissionsMiddleware;
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
 use phpbb\core\accessRules\policies as AccessRulesPolicies;
+use phpbb\core\accessRules\resource;
 use phpbb\core\accessRules\users as AccessRulesUsers;
 use phpbb\db\errors\DuplicateError;
 use phpbb\db\errors\FieldError;
@@ -104,7 +105,7 @@ class users extends standardMethods
             $user->save();
 
             $user->addMemberships($organisations);
-            $user->addAccessRules('*');
+            $user->addAccessRules($user, resource::ANY);
         }
         catch(DuplicateError $error) {
             throw new BadRequest(sprintf(
@@ -157,15 +158,15 @@ class users extends standardMethods
      */
     public function getMe(request $request, response $response, app $app): response
     {
-        $auth = $request->context('auth');
-        $subject = $auth->raw('sub');
-        if (!$subject) {
+        $auth = $request->context->get('auth');
+        $userId = $request->context->get('userId');
+        if (!$userId) {
             throw new NotAuthorized($request);
         }
         $user = $app
             ->plugin('db')
             ->collection('users')
-            ->findOne(['uuid' => $subject]);
+            ->findOne(['uuid' => $userId]);
         if (!$user) {
             throw new ResourceNotFound($request);
         }

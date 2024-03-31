@@ -177,6 +177,9 @@ class request
      */
     public function cookie(string $name): ?string
     {
+        if (!$name) {
+            return null;
+        }
         return $_COOKIE[str_replace(['-', '.'], '_', $name)] ?? null;
     }
 

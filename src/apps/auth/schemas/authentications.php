@@ -4,6 +4,7 @@ namespace apps\auth\schemas;
 
 use phpbb\db\collection\entity;
 use phpbb\db\collection\field;
+use phpbb\errors\BadRequest;
 use phpbb\utils\hmac;
 
 /**
@@ -25,6 +26,7 @@ class authentications extends entity
             ->field('signature', null)
             ->field('kid', null)
             ->field('settings', null, field::TYPE_OBJECT)
+            ->field('scopes', ['phpbb'], field::selection(['phpbb', 'admin']))
             ->index('type', field::INDEX_PRIMARY)
             ->index('identifier', field::INDEX_PRIMARY)
             ->hide(['signature', 'kid']);
@@ -40,5 +42,21 @@ class authentications extends entity
     public function verify(string $credential): bool
     {
         return hmac::hash($credential, $this->kid) == $this->signature;
+    }
+
+    /**
+     * Verifies token scope
+     * 
+     * @author ikubicki
+     * @param string $scope
+     * @return void
+     * @throws BadRequest
+     */
+    public function checkScope(string $scope): void
+    {
+        $scopes = array_diff(explode(',', $scope), $this->scopes);
+        if (count($scopes)) {
+            throw new BadRequest(sprintf('Invalid scopes: %s', join(', ', $scopes)));
+        }
     }
 }

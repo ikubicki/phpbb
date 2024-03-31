@@ -21,7 +21,7 @@ class collection
     /**
      * @var string $name
      */
-    private string $name;
+    public string $name;
 
     /**
      * The constructor

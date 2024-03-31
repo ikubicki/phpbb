@@ -27,6 +27,7 @@ class users extends entity
             ->field('name')
             ->field('status', 'inactive', field::enum(['inactive', 'active', 'locked', 'deleted']))
             ->field('metadata', new stdClass, field::TYPE_OBJECT)
+            ->field('creator', null, field::TYPE_UUID)
             ->field('created', null, field::TYPE_UNIXTIME, false, field::ON_CREATE)
             ->field('modified', null, field::TYPE_UNIXTIME, false, field::ON_UPDATE)
             ->index('uuid', field::INDEX_PRIMARY)
@@ -91,49 +92,22 @@ class users extends entity
      * Adds access rules for the user resource
      * 
      * @author ikubicki
+     * @param string|entity $principal
      * @param mixed $accessRules
      * @return users
      */
-    public function addAccessRules(mixed $accessRules): users
+    public function addAccessRules(string|entity $principal, mixed $accessRules): users
     {
+        if ($principal instanceof entity) {
+            $principal = $principal->uuid;
+        }
         $policiesCollection = $this->db->collection('policies');
-        $policy = $policiesCollection->findOne(['principal' => $this->uuid]);
+        $policy = $policiesCollection->findOne(['principal' => (string) $principal]);
         if (!$policy) {
             $policy = $policiesCollection->create();
-            $policy->principal = $this->uuid;
+            $policy->principal = (string) $principal;
         }
-        if (!isset($policy->policies)) {
-            $policy->policies = [];
-        }
-        $resource = 'users:' . $this->uuid;
-        $found = false;
-        foreach($policy->policies as $resourcePolicy) {
-            if ($resourcePolicy->resource == $resource) {
-                $found = true;
-                if ($resourcePolicy->access == '*') {
-                    break;
-                }
-                if ($accessRules == '*') {
-                    $resourcePolicy->access = '*';
-                    break;
-                }
-                if (!is_array($accessRules)) {
-                    break;
-                }
-                $resourcePolicy->access = array_merge(
-                    $resourcePolicy->access ?? [],
-                    $accessRules
-                );
-            }
-        }
-        if (!$found) {
-            $resourcePolicies = $policy->policies;
-            $resourcePolicies[] = [
-                'resource' => $resource,
-                'access' => $accessRules,
-            ];
-            $policy->policies = $resourcePolicies;
-        }
+        $policy->addAccessRules($this, $accessRules);
         $policy->save();
         return $this;
     }

@@ -90,7 +90,10 @@ db.authentications.insertMany([
         "identifier": "admin",
         "kid": "b0208cdc-3750-4b1a-a552-0665ab7d8c90",
         "owner": "cfe2134e-1e69-47c5-b12d-05d47b94ff0c",
-        "signature": "v1.acffae7125ad094e11e146690e7b6aae644355b75c40dbe25dd56c5731fa0436"
+        "signature": "v1.acffae7125ad094e11e146690e7b6aae644355b75c40dbe25dd56c5731fa0436",
+        "scopes": [
+            'phpbb', 'admin'
+        ]
     }
 ])
 
@@ -121,7 +124,7 @@ db.memberships.insertMany([
 db.policies.insertMany([
     {
         principal: 'b6f5fd65-1510-4a98-bd14-61740cb834f8',
-        policies: [
+        rules: [
             {
                 resource: '*',
                 access: 'threads.moderate'
@@ -130,7 +133,7 @@ db.policies.insertMany([
     },
     {
         "principal": '6091db6f-8d63-417a-9605-b39eb264efc4',
-        "policies": [
+        "rules": [
             {
                 "resource": '*',
                 "access": 'users.view'
@@ -153,7 +156,7 @@ db.policies.insertMany([
     },
     {
         principal: 'bd80d180-e424-425d-9ed9-75a8236a8a8d',
-        policies: [
+        rules: [
             {
                 resource: '*',
                 access: '*'
@@ -162,7 +165,7 @@ db.policies.insertMany([
     },
     {
         principal: 'cfe2134e-1e69-47c5-b12d-05d47b94ff0c',
-        policies: [
+        rules: [
             {
                 resource: '*',
                 access: '*'

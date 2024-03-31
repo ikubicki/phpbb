@@ -4,7 +4,7 @@ namespace apps\auth\middleware;
 
 use phpbb\app;
 use phpbb\apps\middleware\abstraction;
-use phpbb\core\accessRules;
+use phpbb\core\accessRules\resource;
 use phpbb\request;
 use phpbb\response;
 use phpbb\errors\NotAuthorized;
@@ -44,19 +44,14 @@ class permissionsMiddleware extends abstraction
      */
     public function execute(request $request, response $response, app $app): request
     {
-        if (!$request->context->raw('sub')) {
+        if (!$request->context->raw('userId')) {
             throw new NotAuthorized($request);
         }
-        if ($request->context->get('access')) {
-            $accessRules = new accessRules();
-            $accessRules->loadPermissions($app, $request->context->raw('sub'));
-            $request->context->set('access', $accessRules);
-        }
-        
+        $accessRules = $request->context->get('access');
         $allowed = false;
         foreach ($this->permissions as $permission) {
             list($collection) = explode('.', $permission);
-            $resource = "$collection:{$request->uri->raw('id', '*')}";
+            $resource = "$collection:{$request->uri->raw('id', resource::ANY)}";
             if ($accessRules->has($resource, $permission)) {
                 $allowed = true;
                 continue;
