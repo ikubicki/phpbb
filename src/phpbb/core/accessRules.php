@@ -170,6 +170,7 @@ class accessRules implements JsonSerializable
      */
     public function loadPermissions(app $app, string $uuid): accessRules
     {
+
         $principals = $this->getPrincipals($app, [$uuid]);
         $policies = $app->plugin('db')->collection('policies');
         $this->addMany($policies->find([

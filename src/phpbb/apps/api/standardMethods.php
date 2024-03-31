@@ -3,6 +3,7 @@
 namespace phpbb\apps\api;
 
 use phpbb\app;
+use phpbb\core\accessRules;
 use phpbb\db\errors\DuplicateError;
 use phpbb\db\errors\FieldError;
 use phpbb\errors\BadRequest;
@@ -121,6 +122,34 @@ abstract class standardMethods
             }
         }
         return $response->status($response::OK)->send($data);
+    }
+
+
+    /**
+     * Handles GET /{resource}/:id/permissions request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws BadRequest
+     */
+    public function getRecordPermissions(request $request, response $response, app $app): response
+    {
+        if (empty($request->uri->param('id'))) {
+            throw new ResourceNotFound($request);
+        }
+        $collection = $app->plugin('db')->collection(static::COLLECTION);
+        $record = $collection->findOne([
+            'uuid' => $request->uri->param('id')
+        ]);
+        if (!$record) {
+            throw new ResourceNotFound($request);
+        }
+        $accessRules = new accessRules();
+        $accessRules->loadPermissions($app, $record->uuid);
+        return $response->send($accessRules);
     }
 
     /**

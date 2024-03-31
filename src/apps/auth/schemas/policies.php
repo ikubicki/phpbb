@@ -110,4 +110,29 @@ class policies extends entity
         }
         return $resource;
     }
+
+    /**
+     * Adds access rules to a given entity
+     * 
+     * @author ikubicki
+     * @param entity $entity
+     * @param string|entity $principal
+     * @param mixed $accessRules
+     * @return entity
+     */
+    public static function addAccessRulesToEntity(entity $entity, string|entity $principal, mixed $accessRules): entity
+    {
+        if ($principal instanceof entity) {
+            $principal = $principal->uuid;
+        }
+        $policiesCollection = $entity->db->collection('policies');
+        $policy = $policiesCollection->findOne(['principal' => (string) $principal]);
+        if (!$policy) {
+            $policy = $policiesCollection->create();
+            $policy->principal = (string) $principal;
+        }
+        $policy->addAccessRules($entity, $accessRules);
+        $policy->save();
+        return $entity;
+    }
 }

@@ -25,7 +25,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"type\": \"password\",\n    \"identifier\": \"admin\",\n    \"credential\": \"qwerty\"\n}",
+					"raw": "{\n    \"type\": \"password\",\n    \"identifier\": \"admin\",\n    \"credential\": \"qwerty\",\n    \"scope\": \"phpbb,admin\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -33,14 +33,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/auth.php/authorize",
+					"raw": "http://localhost:8080/auth/authorize",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"auth.php",
+						"auth",
 						"authorize"
 					]
 				}
@@ -148,7 +148,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n    \"users:2c14c986-8a46-4c50-823b-26378fa7c4f9\",\n    \"categories:001162dc-45bd-4c71-83ce-113311794336\"\n]",
+					"raw": "[\n    \"users:2c14c986-8a46-4c50-823b-26378fa7c4f9\",\n    \"categories:001162dc-45bd-4c71-83ce-113311794336\",\n    \"categories:*\"\n]",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -165,6 +165,53 @@
 					"path": [
 						"auth.php",
 						"permissions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /users (fail)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"abcd\",\n    \"metadata\": {\n        \"location\": \"Poland\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/auth.php/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"users"
 					]
 				}
 			},
@@ -301,6 +348,52 @@
 			"response": []
 		},
 		{
+			"name": "GET /users/*/permissions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "accept",
+						"value": "application/xml",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/auth.php/users/{{phpbb.user_uuid}}/permissions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"users",
+						"{{phpbb.user_uuid}}",
+						"permissions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "PATCH /users/*",
 			"event": [
 				{
@@ -426,6 +519,101 @@
 			"response": []
 		},
 		{
+			"name": "POST /organisations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set('phpbb.organisation_uuid', pm.response.json().uuid)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"My super group\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/auth.php/organisations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"organisations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH /organisations/*",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"default\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/auth/organisations/{{phpbb.organisation_uuid}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth",
+						"organisations",
+						"{{phpbb.organisation_uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "GET /organisations/*",
 			"event": [
 				{
@@ -465,6 +653,92 @@
 							"key": "references",
 							"value": "true"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE /organisations/*",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/auth/organisations/{{phpbb.organisation_uuid}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth",
+						"organisations",
+						"{{phpbb.organisation_uuid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /authentications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set('phpbb.organisation_uuid', pm.response.json()[0].uuid)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/auth.php/authentications",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"authentications"
 					]
 				}
 			},

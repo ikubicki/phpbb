@@ -135,12 +135,16 @@ db.policies.insertMany([
         "principal": '6091db6f-8d63-417a-9605-b39eb264efc4',
         "rules": [
             {
-                "resource": '*',
-                "access": 'users.view'
+                resource: 'users:*',
+                access: 'users.view'
             },
             {
-                "resource": '*',
-                "access": 'organisations.view'
+                resource: 'organisations:*',
+                access: 'organisations.view'
+            },
+            {
+                resource: 'categories:*',
+                access: 'categories.view'
             },
             {
                 resources: [

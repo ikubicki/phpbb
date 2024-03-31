@@ -6,6 +6,27 @@ use phpbb\response;
 use XMLWriter;
 
 /**
+ * Get rid of unwanted characters form XML tag names
+ * 
+ * @author ikubicki
+ * @param mixed $key
+ * @return string
+ */
+function sanitizeKey($key): string
+{
+    if (is_numeric($key)) {
+        return "number:{$key}";
+    }
+    if ($key == '*') {
+        return 'id:any';
+    }
+    if (strpos($key, '-')) {
+        return 'id:' . $key;
+    }
+    return $key;
+}
+
+/**
  * XML serializer
  */
 class xml extends abstraction
@@ -58,6 +79,7 @@ class xml extends abstraction
         if (!$key) {
             return $xml;
         }
+        $key = sanitizeKey($key);
         if (is_object($data)) {
             $data = json_decode(json_encode($data), true);
         }

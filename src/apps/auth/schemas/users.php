@@ -98,17 +98,7 @@ class users extends entity
      */
     public function addAccessRules(string|entity $principal, mixed $accessRules): users
     {
-        if ($principal instanceof entity) {
-            $principal = $principal->uuid;
-        }
-        $policiesCollection = $this->db->collection('policies');
-        $policy = $policiesCollection->findOne(['principal' => (string) $principal]);
-        if (!$policy) {
-            $policy = $policiesCollection->create();
-            $policy->principal = (string) $principal;
-        }
-        $policy->addAccessRules($this, $accessRules);
-        $policy->save();
+        policies::addAccessRulesToEntity($this, $principal, $accessRules);
         return $this;
     }
 

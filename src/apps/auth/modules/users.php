@@ -6,6 +6,7 @@ use apps\auth\middleware\jwtAuthMiddleware;
 use apps\auth\middleware\permissionsMiddleware;
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
+use phpbb\core\accessRules;
 use phpbb\core\accessRules\policies as AccessRulesPolicies;
 use phpbb\core\accessRules\resource;
 use phpbb\core\accessRules\users as AccessRulesUsers;
@@ -47,13 +48,13 @@ class users extends standardMethods
                 new permissionsMiddleware([AccessRulesUsers::VIEW]),
             ]
         ]);
-        $this->app->get('/users/:id/permissions', [$this, 'getRecord'], [
+        $this->app->get('/users/:id/permissions', [$this, 'getRecordPermissions'], [
             'preExecution' => [
                 new jwtAuthMiddleware(),
                 new permissionsMiddleware([AccessRulesPolicies::VIEW]),
             ]
         ]);
-        $this->app->patch('/users/:id/permissions', [$this, 'getRecord'], [
+        $this->app->patch('/users/:id/permissions', [$this, 'patchRecordPermissions'], [
             'preExecution' => [
                 new jwtAuthMiddleware(),
                 new permissionsMiddleware([AccessRulesPolicies::EDIT]),

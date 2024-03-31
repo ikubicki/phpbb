@@ -66,8 +66,7 @@ class permissions
      */
     public function getPermissions(request $request, response $response, app $app): response
     {
-        $accessRules = $request->context('access');
-        return $response->send($accessRules);
+        return $response->send($request->context('access'));
     }
 
     /**
@@ -82,6 +81,7 @@ class permissions
     public function postPermissions(request $request, response $response, app $app): response
     {
         $accessRules = $request->context('access');
-        return $response->send($accessRules->getRules($request->body->toArray()));
+        $results = $accessRules->getAccessRules($request->body->toArray());
+        return $response->send($results);
     }
 }
