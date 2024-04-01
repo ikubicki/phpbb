@@ -302,7 +302,7 @@ class accessRules implements JsonSerializable
      * 
      * @author ikubicki
      * @param string|array|entity $resourceId
-     * @return resource
+     * @return accessRules\resource
      */
     public static function getResource(string|array|entity $resourceId): resource
     {
