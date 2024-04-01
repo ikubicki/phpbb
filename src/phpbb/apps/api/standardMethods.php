@@ -124,7 +124,6 @@ abstract class standardMethods
         return $response->status($response::OK)->send($data);
     }
 
-
     /**
      * Handles GET /{resource}/:id/permissions request
      * 
@@ -148,7 +147,7 @@ abstract class standardMethods
             throw new ResourceNotFound($request);
         }
         $accessRules = new accessRules();
-        $accessRules->loadPermissions($app, $record->uuid);
+        $accessRules->loadPermissions($app, $record->uuid, $request->query('include') != 'all');
         return $response->send($accessRules);
     }
 
@@ -176,6 +175,50 @@ abstract class standardMethods
         $record->setMany($request->body->toArray());
         $record->save();
         return $response->status($response::OK)->send($record);
+    }
+
+    /**
+     * Handles PATCH /{resource}/:id/permissions request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws BadRequest
+     */
+    public function patchRecordPermissions(request $request, response $response, app $app): response
+    {
+        if (empty($request->uri->param('id'))) {
+            throw new ResourceNotFound($request);
+        }
+        $collection = $app->plugin('db')->collection(static::COLLECTION);
+        $record = $collection->findOne([
+            'uuid' => $request->uri->param('id')
+        ]);
+        if (!$record) {
+            throw new ResourceNotFound($request);
+        }
+
+        $collection = $app->plugin('db')->collection('policies');
+        $policy = $collection->findOneOrCreate([
+            'principal' => $record->uuid
+        ]);
+        $accessRules = [$request->body->export()];
+        if ($request->body->isArray()) {
+            $accessRules = $request->body->export();
+        }
+        foreach($accessRules as $accessRule) {
+            $resource = $accessRule->resources ?? $accessRule->resource ?? null;
+            if ($resource) {
+                $policy->addAccessRules($resource, $accessRule->access ?? []);
+            }
+        }
+        $policy->save();
+
+        $accessRules = new accessRules();
+        $accessRules->loadPermissions($app, $record->uuid, $request->query('include') != 'all');
+        return $response->send($accessRules);
     }
 
     /**

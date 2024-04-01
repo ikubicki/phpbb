@@ -2,6 +2,7 @@
 
 namespace apps\auth\schemas;
 
+use phpbb\core\accessRules;
 use phpbb\core\accessRules\resource;
 use phpbb\db\collection\entity;
 use phpbb\db\collection\field;
@@ -31,17 +32,19 @@ class policies extends entity
      * Adds rights to the policy object
      * 
      * @author ikubicki
-     * @param entity|string $resource
+     * @param entity|array|string $resourceId
      * @param string|array $accessRules
      * @return policies
      * @throws ServerError
      */
-    public function addAccessRules(entity|string $resource, string|array $accessRules): policies
+    public function addAccessRules(entity|array|string $resourceId, string|array $accessRules): policies
     {
-        $resourceId = self::extractResourceIdentifier($resource);
+        $resource = accessRules::getResource($resourceId);
+        $resource->addAccessRules($accessRules);
+        
         $found = false;
         foreach($this->rules as $resourceRule) {
-            if ($this->isMatchingResource($resourceRule, $resourceId)) {
+            if ($this->isMatchingResource($resourceRule, $resource)) {
                 $found = true;
                 if ($resourceRule->access == resource::ANY) {
                     break;
@@ -53,20 +56,21 @@ class policies extends entity
                 if (!is_array($accessRules)) {
                     break;
                 }
-                $resourceRule->access = array_merge(
-                    $resourceRule->access ?? [],
-                    $accessRules
-                );
+                $resourceRule->access = $resource->getAccessRules();
             }
         }
         if (!$found) {
             $resourceRules = $this->rules;
-            $resourceRules[] = [
-                'resource' => $resourceId,
-                'access' => $accessRules,
-            ];
+            $resourceRules[] = $resource->asAccess();
             $this->rules = $resourceRules;
         }
+        $rules = $this->rules;
+        foreach($rules as $i => $resourceRule) {
+            if (empty($resourceRule->access)) {
+                unset($rules[$i]);
+            }
+        }
+        $this->rules = $rules;
         return $this;
     }
     
@@ -75,40 +79,27 @@ class policies extends entity
      * 
      * @author ikubicki
      * @param stdClass $rule
-     * @param string $resourceId
+     * @param resource|string $resource
      * @return bool
      */
-    private function isMatchingResource(stdClass $rule, string $resourceId): bool
+    private function isMatchingResource(stdClass $rule, resource|string $resource): bool
     {
+        $resourceId = $resource;
+        if ($resource instanceof resource) {
+            $resourceId = $resource->id;
+        }
+        if (is_array($resourceId)) {
+            $isMatchingResource = true;
+            foreach($resourceId as $singleResourceId) {
+                $isMatchingResource = $isMatchingResource && $this->isMatchingResource($rule, $singleResourceId);
+            }
+            return $isMatchingResource;
+        }
         list($collection) = explode(':', $resourceId);
         $ruleResources = $rule->resources ?? (array) $rule->resource ?? [];
         return in_array(resource::ANY, $ruleResources) ||
             in_array($collection . ':' . resource::ANY, $ruleResources) ||
             in_array($resourceId, $ruleResources);
-    }
-
-    /**
-     * Extracts collection name and resource identifier from given resource
-     * 
-     * @author ikubicki
-     * @param entity|string $resource
-     * @return string
-     */
-    public static function extractResourceIdentifier(entity|string $resource): string
-    {
-        if ($resource instanceof entity) {
-            if ($resource->uuid ?? false && $resource->collection->name ?? false) {
-                $collection = $resource->collection->name;
-                $resource = "{$collection}:{$resource->uuid}";
-            }
-            else {
-                throw new ServerError(sprintf(
-                    'Unable to grant permissions for %s object without uuid identifier',
-                    $resource->collection->name ?? 'unknown collection'
-                ));
-            }
-        }
-        return $resource;
     }
 
     /**

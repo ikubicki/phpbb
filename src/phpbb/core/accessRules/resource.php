@@ -3,6 +3,8 @@
 namespace phpbb\core\accessRules;
 
 use JsonSerializable;
+use phpbb\errors\ServerError;
+use stdClass;
 
 class resource implements JsonSerializable
 {
@@ -22,7 +24,7 @@ class resource implements JsonSerializable
     /**
      * @var string $id
      */
-    protected string $id;
+    public string|array $id;
 
     /**
      * @var array $accessRules
@@ -35,8 +37,16 @@ class resource implements JsonSerializable
      * @author ikubicki
      * @param string $id
      */
-    public function __construct(string $id)
+    public function __construct(string|array $id)
     {
+        if (is_array($id)) {
+            list($resource) = explode(':', reset($id));
+            foreach($id as $singleId) {
+                if (stripos($singleId, "$resource:") !== 0) {
+                    throw new ServerError("Provided resources IDs are different kind.");
+                }
+            }
+        }
         $this->id = $id;
     }
 
@@ -53,6 +63,23 @@ class resource implements JsonSerializable
             'resource' => static::RESOURCE,
             'accessRules' => $this->accessRules,
         ];
+    }
+
+    /**
+     * Returns info as access structure
+     * @return stdClass
+     */
+    public function asAccess(): stdClass
+    {
+        $access = [];
+        if (is_array($this->id)) {
+            $access['resources'] = $this->id;
+        }
+        else {
+            $access['resource'] = $this->id;
+        }
+        $access['access'] = $this->accessRules;
+        return (object) $access;
     }
     
     /**
@@ -85,7 +112,7 @@ class resource implements JsonSerializable
                 return $accessRule != self::ANY;
             });
         }
-        $this->accessRules = array_unique($this->accessRules);
+        $this->accessRules = array_values(array_unique($this->accessRules));
         return $this;
     }
 
@@ -102,5 +129,19 @@ class resource implements JsonSerializable
             return true;
         }
         return in_array($accessRule, static::ACCESS_RULES);
+    }
+
+    /**
+     * Creates an instance of a resource
+     * 
+     * @author ikubicki
+     * @param string $resource
+     * @param string|array $id
+     * @return static
+     */
+    public static function produce(string $resource, string|array $id): static
+    {
+        $class = sprintf('%s\%s', __NAMESPACE__, $resource);
+        return new $class($id);
     }
 }

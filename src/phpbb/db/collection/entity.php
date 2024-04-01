@@ -7,6 +7,7 @@ use phpbb\db;
 use phpbb\db\collection;
 use phpbb\db\collection\field\enum;
 use phpbb\db\collection\field\selection;
+use phpbb\db\errors\FieldError;
 use phpbb\db\errors\ValidationError;
 
 /**
@@ -23,7 +24,7 @@ class entity implements JsonSerializable
     /**
      * @var array $data
      */
-    private array $data = [];
+    protected array $data = [];
 
     /**
      * @var collection $collection
@@ -68,7 +69,7 @@ class entity implements JsonSerializable
     /**
      * @var int $__status
      */
-    private int $__status = self::NEW;
+    protected int $__status = self::NEW;
 
     /**
      * Sets collection instance
@@ -348,7 +349,7 @@ class entity implements JsonSerializable
 
     /**
      * Saves entity to database collection
-     * Calls registered field behaviour hooks
+     * Calls registered field behavior hooks
      * Marks entity as current
      * 
      * @author ikubicki
@@ -370,15 +371,29 @@ class entity implements JsonSerializable
     }
 
     /**
-     * Calls field behaviour hooks
+     * Returns resource ID
      * 
      * @author ikubicki
-     * @param int $behaviour
+     * @return string
+     */
+    public function getResourceId(): string
+    {
+        if (!$this->__get('uuid')) {
+            throw new FieldError("Unable to calculate resource ID.");
+        }
+        return $this->collection->name . ':' . $this->__get('uuid');
+    }
+
+    /**
+     * Calls field behavior hooks
+     * 
+     * @author ikubicki
+     * @param int $behavior
      * @return void
      */
-    private function callHooks(int $behaviour): void
+    private function callHooks(int $behavior): void
     {
-        foreach(($this->hooks[$behaviour] ?? []) as $field => $definition) {
+        foreach(($this->hooks[$behavior] ?? []) as $field => $definition) {
             $this->data[$field] = $definition->calculateValue();
         }
     }
@@ -432,6 +447,15 @@ class entity implements JsonSerializable
         );
     }
 
+    /**
+     * Validates field value
+     * 
+     * @author ikubicki
+     * @param string $field
+     * @param array $validators
+     * @param mixed $value
+     * @return void
+     */
     protected function validateField(string $field, array $validators, mixed $value): void
     {
         foreach($validators as $validator => $expected)
@@ -446,5 +470,20 @@ class entity implements JsonSerializable
                     break;
             }
         }
+    }
+
+    /**
+     * Modify dump contents for readability
+     * 
+     * @author ikubicki
+     * @return array
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'collection' => $this->collection->name ?? 'unknown',
+            'data' => $this->data,
+            'status' => $this->__status,
+        ];
     }
 }

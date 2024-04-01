@@ -442,6 +442,55 @@
 			"response": []
 		},
 		{
+			"name": "PATCH /users/*/permissions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{phpbb.access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"resources\": [\n            \"categories:abcdef\",\n            \"categories:ghijkl\"\n        ],\n        \"access\": [\n            \"categories.view\",\n            \"categories.post\",\n            \"categories.invalid-grant\"\n        ]\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/auth.php/users/{{phpbb.user_uuid}}/permissions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"auth.php",
+						"users",
+						"{{phpbb.user_uuid}}",
+						"permissions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "DELETE /users/*",
 			"event": [
 				{

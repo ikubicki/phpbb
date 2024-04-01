@@ -7,6 +7,7 @@ use phpbb\app;
 use phpbb\core\accessRules\resource;
 use phpbb\db\collection\entity;
 use phpbb\db\connectors\records;
+use phpbb\errors\ServerError;
 
 class accessRules implements JsonSerializable
 {
@@ -79,8 +80,7 @@ class accessRules implements JsonSerializable
                 $this->resources[$resource] = [];
             }
             if (empty($this->resources[$resource][$id])) {
-                $class = sprintf('%s\accessRules\%s', __NAMESPACE__, $resource);
-                $this->resources[$resource][$id] = new $class($id);
+                $this->resources[$resource][$id] = resource::produce($resource, $id);
             }
             $this->resources[$resource][$id]->addAccessRules($access);
         }
@@ -145,10 +145,14 @@ class accessRules implements JsonSerializable
      * @author ikubicki
      * @param app $app
      * @param array $uuids
+     * @param bool $strict
      * @return array
      */
-    private function getPrincipals(app $app, array $uuids): array
+    private function getPrincipals(app $app, array $uuids, bool $strict = false): array
     {
+        if ($strict) {
+            return $uuids;
+        }
         $memberships = (array) $app->plugin('db')->collection('memberships')->find([
             'member' => $uuids
         ]);
@@ -166,12 +170,12 @@ class accessRules implements JsonSerializable
      * @author ikubicki
      * @param app $app
      * @param string $uuid
+     * @param string $strict
      * @return accessRules
      */
-    public function loadPermissions(app $app, string $uuid): accessRules
+    public function loadPermissions(app $app, string $uuid, bool $strict = false): accessRules
     {
-
-        $principals = $this->getPrincipals($app, [$uuid]);
+        $principals = $this->getPrincipals($app, [$uuid], $strict);
         $policies = $app->plugin('db')->collection('policies');
         $this->addMany($policies->find([
             'principal' => $principals
@@ -224,11 +228,11 @@ class accessRules implements JsonSerializable
      * 
      * @author ikubicki
      * @param string $action
-     * @param string|object $resource
+     * @param string|entity $resource
      * @param ?string $uuid
      * @return bool
      */
-    public function can(string $action, string|object $resource, ?string $uuid): bool
+    public function can(string $action, string|entity $resource, ?string $uuid): bool
     {
         if ($resource instanceof entity) {
             $uuid = $resource->uuid;
@@ -244,11 +248,11 @@ class accessRules implements JsonSerializable
      * Checks create permissions
      * 
      * @author ikubicki
-     * @param string|object $resource
+     * @param string|entity $resource
      * @param ?string $uuid
      * @return bool
      */
-    public function canCreate(string|object $resource, ?string $uuid): bool
+    public function canCreate(string|entity $resource, ?string $uuid): bool
     {
         return $this->can(self::CREATE, $resource, $uuid);
     }
@@ -257,11 +261,11 @@ class accessRules implements JsonSerializable
      * Checks read permissions
      * 
      * @author ikubicki
-     * @param string|object $resource
+     * @param string|entity $resource
      * @param ?string $uuid
      * @return bool
      */
-    public function canView(string|object $resource, ?string $uuid): bool
+    public function canView(string|entity $resource, ?string $uuid): bool
     {
         return $this->can(self::VIEW, $resource, $uuid);
     }
@@ -270,11 +274,11 @@ class accessRules implements JsonSerializable
      * Checks update permissions
      * 
      * @author ikubicki
-     * @param string|object $resource
+     * @param string|entity $resource
      * @param ?string $uuid
      * @return bool
      */
-    public function canEdit(string|object $resource, ?string $uuid): bool
+    public function canEdit(string|entity $resource, ?string $uuid): bool
     {
         return $this->can(self::EDIT, $resource, $uuid);
     }
@@ -284,12 +288,39 @@ class accessRules implements JsonSerializable
      * Checks delete permissions
      * 
      * @author ikubicki
-     * @param string|object $resource
+     * @param string|entity $resource
      * @param ?string $uuid
      * @return bool
      */
-    public function canDelete(string|object $resource, ?string $uuid): bool
+    public function canDelete(string|entity $resource, ?string $uuid): bool
     {
         return $this->can(self::DELETE, $resource, $uuid);
+    }
+
+    /**
+     * Creates an instance of access rules resource
+     * 
+     * @author ikubicki
+     * @param string|array|entity $resourceId
+     * @return resource
+     */
+    public static function getResource(string|array|entity $resourceId): resource
+    {
+        if (is_array($resourceId)) {
+            list($resource) = explode(':', $resourceId[0]);
+            foreach($resourceId as $i => $singleResourceId) {
+                if ($singleResourceId instanceof entity) {
+                    $resourceId[$i] = $singleResourceId->getResourceId();
+                }
+            }
+        }
+        else if ($resourceId instanceof entity) {
+            $resource = $resourceId->collection->name ?? 'unknown';
+            $resourceId = $resourceId->getResourceId();
+        }
+        else {
+            list($resource) = explode(':', $resourceId);
+        }
+        return resource::produce($resource, $resourceId);
     }
 }

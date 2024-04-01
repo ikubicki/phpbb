@@ -26,7 +26,7 @@ class body
     {
         $contents = file_get_contents('php://input');
         if ($request->isJson()) {
-            $this->data = new keyvalue((object) json_decode($contents));
+            $this->data = new keyvalue(json_decode($contents));
         }
         else if ($request->isXml()) {
             $this->data = simplexml_load_string($contents);
@@ -71,6 +71,20 @@ class body
     }
 
     /**
+     * Checks if body is an array
+     * 
+     * @author ikubicki
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        if ($this->data instanceof keyvalue) {
+            return $this->data->isArray();
+        }
+        return is_array($this->data);
+    }
+
+    /**
      * Returns body parameters as array
      * 
      * @author ikubicki
@@ -82,5 +96,19 @@ class body
             return $this->data->jsonSerialize();
         }
         return (array) $this->data;
+    }
+
+    /**
+     * Returns body contents
+     * 
+     * @author ikubicki
+     * @return mixed
+     */
+    public function export(): mixed
+    {
+        if ($this->data instanceof keyvalue) {
+            return $this->data->export();
+        }
+        return $this->data;
     }
 }

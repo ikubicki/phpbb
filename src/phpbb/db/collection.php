@@ -94,6 +94,25 @@ class collection
     }
 
     /**
+     * Queries for a single collection entity
+     * 
+     * @author ikubicki
+     * @param ?array $filters
+     * @param array $options
+     * @param array $fields
+     * @return object
+     */
+    public function findOneOrCreate(?array $filters, ?array $options = [], ?array $fields = []): object
+    {
+        $record = $this->findOne($filters, $options, $fields);
+        if (!$record) {
+            $record = $this->create();
+            $record->setMany($filters);
+        }
+        return $record;
+    }
+
+    /**
      * Adds values as new document to database
      * 
      * @author ikubicki

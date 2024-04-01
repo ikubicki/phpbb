@@ -13,15 +13,15 @@ class keyvalue implements JsonSerializable
     /**
      * @var ?stdClass $data
      */
-    private ?stdClass $data;
+    private stdClass|array|null $data;
 
     /**
      * The constructor
      * 
      * @author ikubicki
-     * @param ?stdClass $data
+     * @param stdClass|array|null $data
      */
-    public function __construct(?stdClass $data = null)
+    public function __construct(stdClass|array|null $data = null)
     {
         $this->data = $data;
     }
@@ -30,13 +30,35 @@ class keyvalue implements JsonSerializable
      * Import data into key value store
      * 
      * @author ikubicki
-     * @param ?stdClass $data
+     * @param stdClass|array|null $data
      * @return keyvalue
      */
-    public function import(?stdClass $data): keyvalue
+    public function import(stdClass|array|null $data): keyvalue
     {
         $this->data = $data;
         return $this;
+    }
+
+    /**
+     * Exports stored data
+     * 
+     * @author ikubicki
+     * @return mixed
+     */
+    public function export(): mixed
+    {
+        return $this->data;
+    }
+
+    /**
+     * Checks if data is an array
+     * 
+     * @author ikubicki
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return is_array($this->data);
     }
 
     /**
