@@ -232,7 +232,7 @@ class accessRules implements JsonSerializable
      * @param ?string $uuid
      * @return bool
      */
-    public function can(string $action, string|entity $resource, ?string $uuid): bool
+    public function can(string $action, string|entity $resource, ?string $uuid = null): bool
     {
         if ($resource instanceof entity) {
             $uuid = $resource->uuid;
@@ -252,7 +252,7 @@ class accessRules implements JsonSerializable
      * @param ?string $uuid
      * @return bool
      */
-    public function canCreate(string|entity $resource, ?string $uuid): bool
+    public function canCreate(string|entity $resource, ?string $uuid = null): bool
     {
         return $this->can(self::CREATE, $resource, $uuid);
     }
@@ -265,7 +265,7 @@ class accessRules implements JsonSerializable
      * @param ?string $uuid
      * @return bool
      */
-    public function canView(string|entity $resource, ?string $uuid): bool
+    public function canView(string|entity $resource, ?string $uuid = null): bool
     {
         return $this->can(self::VIEW, $resource, $uuid);
     }
@@ -278,7 +278,7 @@ class accessRules implements JsonSerializable
      * @param ?string $uuid
      * @return bool
      */
-    public function canEdit(string|entity $resource, ?string $uuid): bool
+    public function canEdit(string|entity $resource, ?string $uuid = null): bool
     {
         return $this->can(self::EDIT, $resource, $uuid);
     }
@@ -292,7 +292,7 @@ class accessRules implements JsonSerializable
      * @param ?string $uuid
      * @return bool
      */
-    public function canDelete(string|entity $resource, ?string $uuid): bool
+    public function canDelete(string|entity $resource, ?string $uuid = null): bool
     {
         return $this->can(self::DELETE, $resource, $uuid);
     }
@@ -304,17 +304,9 @@ class accessRules implements JsonSerializable
      * @param string|array|entity $resourceId
      * @return accessRules\resource
      */
-    public static function getResource(string|array|entity $resourceId): resource
+    public static function getResource(string|entity $resourceId): resource
     {
-        if (is_array($resourceId)) {
-            list($resource) = explode(':', $resourceId[0]);
-            foreach($resourceId as $i => $singleResourceId) {
-                if ($singleResourceId instanceof entity) {
-                    $resourceId[$i] = $singleResourceId->getResourceId();
-                }
-            }
-        }
-        else if ($resourceId instanceof entity) {
+        if ($resourceId instanceof entity) {
             $resource = $resourceId->collection->name ?? 'unknown';
             $resourceId = $resourceId->getResourceId();
         }

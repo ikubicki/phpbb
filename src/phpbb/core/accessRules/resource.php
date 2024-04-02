@@ -24,7 +24,7 @@ class resource implements JsonSerializable
     /**
      * @var string $id
      */
-    public string|array $id;
+    public string $id;
 
     /**
      * @var array $accessRules
@@ -37,16 +37,8 @@ class resource implements JsonSerializable
      * @author ikubicki
      * @param string $id
      */
-    public function __construct(string|array $id)
+    public function __construct(string $id)
     {
-        if (is_array($id)) {
-            list($resource) = explode(':', reset($id));
-            foreach($id as $singleId) {
-                if (stripos($singleId, "$resource:") !== 0) {
-                    throw new ServerError("Provided resources IDs are different kind.");
-                }
-            }
-        }
         $this->id = $id;
     }
 

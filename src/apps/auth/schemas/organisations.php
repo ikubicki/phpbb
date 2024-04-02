@@ -4,6 +4,7 @@ namespace apps\auth\schemas;
 
 use phpbb\db\collection\entity;
 use phpbb\db\collection\field;
+use phpbb\db\connectors\records;
 
 /**
  * Organisations collection entity
@@ -21,6 +22,7 @@ class organisations extends entity
         $this
             ->field('uuid', null, field::TYPE_UUID, false, field::ON_CREATE)
             ->field('parent', null, field::TYPE_UUID)
+            ->field('access', 'private', field::enum(['public', 'private', 'restricted']))
             ->field('type', 'group', field::enum(['group', 'team', 'set']))
             ->field('name')
             ->field('description')
@@ -89,6 +91,19 @@ class organisations extends entity
     {
         policies::addAccessRulesToEntity($this, $principal, $accessRules);
         return $this;
+    }
+
+    /**
+     * Drops all user memberships
+     * 
+     * @author ikubicki
+     * @return organisations
+     */
+    public function getMembers(): records
+    {
+        return $this->db
+            ->collection('memberships')
+            ->find(['organisations' => $this->uuid]);
     }
 
     /**

@@ -20,6 +20,7 @@ class memberships extends entity
     {
         $this
             ->field('member')
+            ->field('status', 'pending', field::enum(['pending', 'confirmed']))
             ->field('organisations', [], field::TYPE_ARRAY)
             ->index('member', field::INDEX_PRIMARY);
     }

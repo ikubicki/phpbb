@@ -39,8 +39,17 @@ class policies extends entity
      */
     public function addAccessRules(entity|array|string $resourceId, string|array $accessRules): policies
     {
+        
+        if (is_array($resourceId)) {
+            $this->verifyResources($resourceId);
+            foreach($resourceId as $singleResourceId) {
+                $this->addAccessRules($singleResourceId, $accessRules);
+            }
+            return $this;
+        }
+
         $resource = accessRules::getResource($resourceId);
-        $resource->addAccessRules($accessRules);
+        $resource->addAccessRules((array) $accessRules);
         
         $found = false;
         foreach($this->rules as $resourceRule) {
@@ -79,27 +88,16 @@ class policies extends entity
      * 
      * @author ikubicki
      * @param stdClass $rule
-     * @param resource|string $resource
+     * @param accessRules\resource $resource
      * @return bool
      */
-    private function isMatchingResource(stdClass $rule, resource|string $resource): bool
+    private function isMatchingResource(stdClass $rule, resource $resource): bool
     {
-        $resourceId = $resource;
-        if ($resource instanceof resource) {
-            $resourceId = $resource->id;
-        }
-        if (is_array($resourceId)) {
-            $isMatchingResource = true;
-            foreach($resourceId as $singleResourceId) {
-                $isMatchingResource = $isMatchingResource && $this->isMatchingResource($rule, $singleResourceId);
-            }
-            return $isMatchingResource;
-        }
-        list($collection) = explode(':', $resourceId);
         $ruleResources = $rule->resources ?? (array) $rule->resource ?? [];
-        return in_array(resource::ANY, $ruleResources) ||
-            in_array($collection . ':' . resource::ANY, $ruleResources) ||
-            in_array($resourceId, $ruleResources);
+        if (in_array($resource->id, $ruleResources)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -125,5 +123,17 @@ class policies extends entity
         $policy->addAccessRules($entity, $accessRules);
         $policy->save();
         return $entity;
+    }
+
+    private function verifyResources($resourceId): void
+    {
+        if (is_array($resourceId)) {
+            list($resource) = explode(':', reset($resourceId));
+            foreach($resourceId as $singleResourceId) {
+                if (stripos($singleResourceId, "$resource:") !== 0) {
+                    throw new ServerError("Provided resources IDs are different kind.");
+                }
+            }
+        }
     }
 }

@@ -11,8 +11,8 @@ class query
 
     const SORT = 'sort';
     const LIMIT = 'limit';
-    const SORT_ASCENDING = 'ascending';
-    const SORT_DESCENDING = 'descending';
+    const SORT_ASCENDING = SORT_ASC;
+    const SORT_DESCENDING = SORT_DESC;
     const INSERT = 'insert';
     const AND = 'and';
     const OR = 'or';
