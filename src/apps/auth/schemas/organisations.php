@@ -107,6 +107,61 @@ class organisations extends entity
     }
 
     /**
+     * Adds a collection of user or organisation IDs
+     * as members of the organisation
+     * 
+     * @author ikubicki
+     * @param array $membersIds
+     * @return organisations
+     */
+    public function addMembers(array $membersIds): organisations
+    {
+        $memberships = $this->db->collection('memberships');
+        foreach($membersIds as $memberId) {
+            $member = $memberships->findOneOrCreate([
+                'member' => $memberId
+            ]);
+            if (!in_array($this->uuid, $member->organisations)) {
+                $organisations = $member->organisations;
+                $organisations[] = $this->uuid;
+                $member->organisations = $organisations;
+            }
+            $member->save();
+        }
+        return $this;
+    }
+
+    /**
+     * Removes a collection of user or organisation IDs
+     * as members from the organisation
+     * 
+     * @author ikubicki
+     * @param array $membersIds
+     * @return organisations
+     */
+    public function removeMembers(array $membersIds): organisations
+    {
+        $memberships = $this->db->collection('memberships');
+        $members = $memberships->find([
+            'member' => $membersIds
+        ]);
+        foreach($members as $member) {
+            if (in_array($this->uuid, $member->organisations)) {
+                $organisations = $member->organisations;
+                unset($organisations[array_search($this->uuid, $organisations)]);
+                if (count($organisations)) {
+                    $member->organisations = array_values($organisations);
+                    $member->save();    
+                }
+                else {
+                    $member->delete();
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
      * Drops all user memberships
      * 
      * @author ikubicki

@@ -3,6 +3,7 @@
 namespace phpbb\apps\router;
 
 use phpbb\app;
+use phpbb\errors\NotDefined;
 use phpbb\request;
 use phpbb\response;
 use stdClass;
@@ -96,6 +97,11 @@ class defined implements route
      */
     public function execute(request $request, response $response, app $app, ?response $previous): ?response
     {
+        if (!is_callable($this->callback)) {
+            throw new NotDefined(sprintf(
+                NotDefined::NO_CALLBACK, $request->method, $request->http->path
+            ));
+        }
         return call_user_func_array($this->callback, [
             $request, $response, $app, $previous
         ]);

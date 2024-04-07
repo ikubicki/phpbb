@@ -4,11 +4,13 @@ namespace apps\auth\modules;
 
 use apps\auth\middleware\jwtAuthMiddleware;
 use apps\auth\middleware\permissionsMiddleware;
+use apps\auth\schemas\organisations as SchemasOrganisations;
 use phpbb\app;
 use phpbb\apps\api\standardMethods;
 use phpbb\core\accessRules\organisations as AccessRulesOrganisations;
 use phpbb\core\accessRules\policies as AccessRulesPolicies;
 use phpbb\core\accessRules\resource;
+use phpbb\db\connectors\records;
 use phpbb\db\errors\DuplicateError;
 use phpbb\db\errors\FieldError;
 use phpbb\errors\BadRequest;
@@ -65,7 +67,13 @@ class organisations extends standardMethods
                 new permissionsMiddleware([AccessRulesOrganisations::DELETE]),
             ]
         ]);
-        $this->app->post('/organisations/:id/members', [$this, 'createRecord'], [
+        $this->app->post('/organisations/:id/members', [$this, 'addOrganisationMembers'], [
+            'preExecution' => [
+                new jwtAuthMiddleware(),
+                new permissionsMiddleware([AccessRulesOrganisations::EXTEND]),
+            ]
+        ]);
+        $this->app->delete('/organisations/:id/members', [$this, 'removeOrganisationMembers'], [
             'preExecution' => [
                 new jwtAuthMiddleware(),
                 new permissionsMiddleware([AccessRulesOrganisations::EXTEND]),
@@ -145,15 +153,7 @@ class organisations extends standardMethods
      */
     public function deleteOrganisation(request $request, response $response, app $app): response
     {
-        if (empty($request->uri->param('id'))) {
-            throw new ResourceNotFound($request);
-        }
-        $organisation = $app->plugin('db')->collection('organisations')->findOne([
-            'uuid' => $request->uri->param('id')
-        ]);
-        if (!$organisation) {
-            throw new ResourceNotFound($request);
-        }
+        $organisation = $this->getOrganisationEntity($request, $app);
         $organisation->dropMemberships();
         $organisation->dropAccessRules();
         $organisation->delete();
@@ -172,6 +172,57 @@ class organisations extends standardMethods
      */
     public function getOrganisationMembers(request $request, response $response, app $app): response
     {
+        $organisation = $this->getOrganisationEntity($request, $app);
+        $members = $this->getOrganisationEntityMembers($organisation, $request, $app);
+        return $response->send($members);
+    }
+
+    /**
+     * Handles GET /organisations/:id/members request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws ResourceNotFound
+     */
+    public function addOrganisationMembers(request $request, response $response, app $app): response
+    {
+        $organisation = $this->getOrganisationEntity($request, $app);
+        $organisation->addMembers((array) $request->body->toArray());
+        $members = $this->getOrganisationEntityMembers($organisation, $request, $app);
+        return $response->send($members);
+    }
+
+    /**
+     * Handles GET /organisations/:id/members request
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param response $response
+     * @param app $app
+     * @return response
+     * @throws ResourceNotFound
+     */
+    public function removeOrganisationMembers(request $request, response $response, app $app): response
+    {
+        $organisation = $this->getOrganisationEntity($request, $app);
+        $organisation->removeMembers((array) $request->body->toArray());
+        $members = $this->getOrganisationEntityMembers($organisation, $request, $app);
+        return $response->send($members);
+    }
+
+    /**
+     * Returns an entity of organisation
+     * 
+     * @author ikubicki
+     * @param request $request
+     * @param app $app
+     * @return SchemasOrganisations
+     */
+    private function getOrganisationEntity(request $request, app $app): SchemasOrganisations
+    {
         if (empty($request->uri->param('id'))) {
             throw new ResourceNotFound($request);
         }
@@ -183,6 +234,20 @@ class organisations extends standardMethods
         if (!$organisation) {
             throw new ResourceNotFound($request);
         }
+        return $organisation;
+    }
+
+    /**
+     * Returns collection of organisation members
+     * 
+     * @author ikubicki
+     * @param SchemasOrganisations $organisation
+     * @param request $request
+     * @param app $app
+     * @return records
+     */
+    private function getOrganisationEntityMembers(SchemasOrganisations $organisation, request $request, app $app): records
+    {
         $members = $organisation->getMembers();
         foreach($members as $i => $member) {
             $members[$i] = $member->member;   
@@ -201,6 +266,6 @@ class organisations extends standardMethods
                 ];
             }
         }
-        return $response->send($members);
+        return $members;
     }
 }

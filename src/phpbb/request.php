@@ -59,6 +59,7 @@ class request
      * @var uri $uri
      */
     public uri $uri;
+    
     /**
      * @var url $url
      */
